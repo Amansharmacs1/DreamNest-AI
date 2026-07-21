@@ -22,14 +22,16 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'DreamNest AI backend is running' });
 });
 
-// Database connection
+// Start the server regardless of DB connection (Phase 1 doesn't strictly need DB yet)
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// Database connection (Non-blocking)
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
   })
   .catch((error) => {
-    console.error('Error connecting to MongoDB:', error);
+    console.warn('Warning: Could not connect to MongoDB. Running without database persistence.', error.message);
   });
