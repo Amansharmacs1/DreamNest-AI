@@ -4,6 +4,7 @@ interface Room {
   id: string;
   name: string;
   category: string;
+  floor: number;
   x: number;
   y: number;
   width: number;

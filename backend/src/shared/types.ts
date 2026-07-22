@@ -62,6 +62,7 @@ export interface RoomDimensions {
   id: string;
   name: string;
   category: 'living' | 'sleeping' | 'service' | 'outdoor' | 'circulation';
+  floor: number;
   x: number;
   y: number;
   width: number;

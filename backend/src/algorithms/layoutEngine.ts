@@ -33,12 +33,47 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
   const rooms: RoomDimensions[] = [];
   
   // Basic layout state
+  let currentFloor = 0;
   let currentX = usableStartX;
   let currentY = usableStartY;
   let rowMaxHeight = 0;
+  let currentFloorArea = 0;
+
+  // Calculate total area for rough floor distribution
+  let totalRequiredArea = 0;
+  const calcArea = (w: number, l: number, count: number = 1) => totalRequiredArea += (w * l * count);
+  
+  if (preferences.rooms.kitchen > 0) calcArea(10, 10);
+  if (preferences.rooms.diningRoom > 0) calcArea(12, 12);
+  calcArea(15, 18, preferences.rooms.livingRooms);
+  calcArea(12, 14, preferences.rooms.bedrooms);
+  calcArea(6, 8, preferences.rooms.bathrooms); // Rough estimate for both attached and common
+  if (preferences.rooms.studyRoom > 0) calcArea(10, 12);
+  if (preferences.rooms.office > 0) calcArea(10, 12);
+  if (preferences.rooms.prayerRoom > 0) calcArea(6, 6);
+  if (preferences.rooms.storeRoom > 0) calcArea(8, 8);
+  if (preferences.rooms.laundry > 0) calcArea(6, 6);
+  if (preferences.rooms.balcony > 0) calcArea(10, 5);
+
+  const numFloors = Math.max(1, preferences.building.numberOfFloors);
+  const targetAreaPerFloor = totalRequiredArea / numFloors;
 
   // Helper to place a room
   const placeRoom = (name: string, category: RoomDimensions['category'], width: number, length: number) => {
+    const roomArea = width * length;
+
+    // Check if we should move to the next floor
+    if (
+      currentFloor < numFloors - 1 &&
+      currentFloorArea + roomArea > targetAreaPerFloor * 1.1 // 10% buffer to avoid stranding small rooms
+    ) {
+      currentFloor++;
+      currentFloorArea = 0;
+      currentX = usableStartX;
+      currentY = usableStartY;
+      rowMaxHeight = 0;
+    }
+
     // Check if we exceed usable width, move to next row
     if (currentX + width > usableStartX + usableWidth) {
       currentX = usableStartX;
@@ -55,6 +90,7 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
       id: generateId(),
       name,
       category,
+      floor: currentFloor,
       x: currentX,
       y: currentY,
       width,
@@ -62,6 +98,7 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
     });
 
     currentX += width;
+    currentFloorArea += roomArea;
     if (length > rowMaxHeight) {
       rowMaxHeight = length;
     }

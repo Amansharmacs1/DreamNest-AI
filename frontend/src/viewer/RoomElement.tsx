@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 
 export default function RoomElement({ room }: { room: any }) {
-  const { updateRoom } = useLayoutStore();
+  const { updateRoom, layout } = useLayoutStore();
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
@@ -33,16 +33,39 @@ export default function RoomElement({ room }: { room: any }) {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || !layout) return;
     
-    // Simplified scaling assumption: 10px per unit based on viewer scaling
-    // A true robust implementation would use SVG CTM
     const dx = (e.clientX - startPos.x) / 10;
     const dy = (e.clientY - startPos.y) / 10;
     
-    // Prevent tiny jitters
     if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-       updateRoom(room.id, { x: room.x + dx, y: room.y + dy });
+       const newX = room.x + dx;
+       const newY = room.y + dy;
+
+       // Check for overlaps with other rooms
+       const overlaps = layout.rooms.some((otherRoom: any) => {
+         if (otherRoom.id === room.id) return false;
+         // Add a small 0.1 buffer to prevent floating point edge glitches
+         return (
+           newX + 0.1 < otherRoom.x + otherRoom.width &&
+           newX + room.width - 0.1 > otherRoom.x &&
+           newY + 0.1 < otherRoom.y + otherRoom.length &&
+           newY + room.length - 0.1 > otherRoom.y
+         );
+       });
+
+       // Check if outside usable area boundaries
+       const outOfBounds = 
+           newX < layout.usableArea.startX ||
+           newX + room.width > layout.usableArea.startX + layout.usableArea.width ||
+           newY < layout.usableArea.startY ||
+           newY + room.length > layout.usableArea.startY + layout.usableArea.length;
+
+       if (!overlaps && !outOfBounds) {
+         updateRoom(room.id, { x: newX, y: newY });
+       }
+       
+       // Always update startPos so the mouse can slip along the boundary without snapping
        setStartPos({ x: e.clientX, y: e.clientY });
     }
   };

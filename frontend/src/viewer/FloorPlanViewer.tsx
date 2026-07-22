@@ -6,6 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import RoomElement from './RoomElement';
+import SceneEngine from '../three/SceneEngine';
+import ControlPanel from '../three/ui/ControlPanel';
+import Minimap from '../three/ui/Minimap';
+import FirstPersonHUD from '../three/ui/FirstPersonHUD';
+import { Box } from 'lucide-react';
 
 export default function FloorPlanViewer() {
   const { layout, undo, redo, history, future, reset } = useLayoutStore();
@@ -16,6 +21,8 @@ export default function FloorPlanViewer() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+  const [activeFloor, setActiveFloor] = useState(0);
 
   if (!layout) {
     return (
@@ -87,6 +94,9 @@ export default function FloorPlanViewer() {
   const viewBoxWidth = layout.plotDimensions.width;
   const viewBoxHeight = layout.plotDimensions.length;
 
+  const maxFloor = Math.max(0, ...layout.rooms.map((r: any) => r.floor || 0));
+  const activeRooms = layout.rooms.filter((r: any) => (r.floor || 0) === activeFloor);
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <header className="flex items-center justify-between p-4 bg-white border-b shadow-sm z-10">
@@ -106,6 +116,9 @@ export default function FloorPlanViewer() {
           <Button variant="outline" size="sm" onClick={reset}>
             <RefreshCcw className="w-4 h-4 mr-2" /> Reset
           </Button>
+          <Button variant={viewMode === '3d' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode(v => v === '2d' ? '3d' : '2d')}>
+            <Box className="w-4 h-4 mr-2" /> {viewMode === '2d' ? 'View 3D' : 'View 2D'}
+          </Button>
           <Button variant="secondary" size="sm" onClick={exportPNG}>
             <Download className="w-4 h-4 mr-2" /> PNG
           </Button>
@@ -115,68 +128,94 @@ export default function FloorPlanViewer() {
         </div>
       </header>
 
-      <main 
-        className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing bg-[#f0f0f0]"
-        style={{ backgroundImage: 'radial-gradient(#ccc 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
-      >
-        <div 
-          className="absolute origin-center transition-transform duration-75"
-          style={{ 
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            width: '100%', height: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
+      {viewMode === '2d' ? (
+        <main 
+          className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing bg-[#f0f0f0]"
+          style={{ backgroundImage: 'radial-gradient(#ccc 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
         >
-          {/* Main SVG Canvas */}
-          <div className="bg-white shadow-2xl relative" style={{ width: `${viewBoxWidth * 10}px`, height: `${viewBoxHeight * 10}px` }}>
-            <svg 
-              ref={svgRef}
-              width="100%" 
-              height="100%" 
-              viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
-              className="drop-shadow-sm"
-            >
-              {/* Plot boundary */}
-              <rect x="0" y="0" width={viewBoxWidth} height={viewBoxHeight} fill="none" stroke="#2563EB" strokeWidth="0.5" strokeDasharray="2,2" />
-              
-              {/* Usable Area boundary */}
-              <rect 
-                x={layout.usableArea.startX} 
-                y={layout.usableArea.startY} 
-                width={layout.usableArea.width} 
-                height={layout.usableArea.length} 
-                fill="#f8fafc" 
-                stroke="#14B8A6" 
-                strokeWidth="0.5" 
-              />
-              
-              {/* Rooms */}
-              {layout.rooms.map((room: any) => (
-                <RoomElement key={room.id} room={room} />
-              ))}
-            </svg>
+          <div 
+            className="absolute origin-center transition-transform duration-75"
+            style={{ 
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              width: '100%', height: '100%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            {/* Main SVG Canvas */}
+            <div className="bg-white shadow-2xl relative" style={{ width: `${viewBoxWidth * 10}px`, height: `${viewBoxHeight * 10}px` }}>
+              <svg 
+                ref={svgRef}
+                width="100%" 
+                height="100%" 
+                viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+                className="drop-shadow-sm"
+              >
+                {/* Plot boundary */}
+                <rect x="0" y="0" width={viewBoxWidth} height={viewBoxHeight} fill="none" stroke="#2563EB" strokeWidth="0.5" strokeDasharray="2,2" />
+                
+                {/* Usable Area boundary */}
+                <rect 
+                  x={layout.usableArea.startX} 
+                  y={layout.usableArea.startY} 
+                  width={layout.usableArea.width} 
+                  height={layout.usableArea.length} 
+                  fill="#f8fafc" 
+                  stroke="#14B8A6" 
+                  strokeWidth="0.5" 
+                />
+                
+                {/* Rooms */}
+                {activeRooms.map((room: any) => (
+                  <RoomElement key={room.id} room={room} />
+                ))}
+              </svg>
+            </div>
           </div>
-        </div>
-        
-        {/* Controls Overlay */}
-        <div className="absolute bottom-6 right-6 flex flex-col gap-2">
-          <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.min(z + 0.2, 3))}>+</Button>
-          <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))}>-</Button>
-          <Button variant="secondary" size="icon" onClick={() => { setZoom(1); setPan({x:0, y:0}); }}>
-            <RefreshCcw className="w-4 h-4" />
-          </Button>
-        </div>
-        
-        {/* Scale indicator */}
-        <div className="absolute bottom-6 left-6 bg-white px-4 py-2 rounded-md shadow-md text-sm font-medium border">
-          Scale: {Math.round(zoom * 100)}% | 1 unit = 1 {layout.plotDimensions.unit}
-        </div>
-      </main>
+          
+          {/* Controls Overlay */}
+          <div className="absolute bottom-6 right-6 flex flex-col gap-2">
+            <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.min(z + 0.2, 3))}>+</Button>
+            <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))}>-</Button>
+            <Button variant="secondary" size="icon" onClick={() => { setZoom(1); setPan({x:0, y:0}); }}>
+              <RefreshCcw className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          {/* Scale indicator */}
+          <div className="absolute bottom-6 left-6 bg-white px-4 py-2 rounded-md shadow-md text-sm font-medium border">
+            Scale: {Math.round(zoom * 100)}% | 1 unit = 1 {layout.plotDimensions.unit}
+          </div>
+
+          {/* Floor Selector */}
+          {maxFloor > 0 && (
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white px-2 py-2 rounded-full shadow-lg border flex gap-1 items-center">
+              {Array.from({ length: maxFloor + 1 }).map((_, i) => (
+                <Button 
+                  key={i} 
+                  variant={activeFloor === i ? 'default' : 'ghost'} 
+                  size="sm"
+                  className="rounded-full px-4"
+                  onClick={() => setActiveFloor(i)}
+                >
+                  Floor {i}
+                </Button>
+              ))}
+            </div>
+          )}
+        </main>
+      ) : (
+        <main className="flex-1 relative overflow-hidden bg-black">
+          <SceneEngine />
+          <ControlPanel />
+          <Minimap />
+          <FirstPersonHUD />
+        </main>
+      )}
     </div>
   );
 }
