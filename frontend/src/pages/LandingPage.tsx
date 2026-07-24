@@ -17,6 +17,7 @@ const processSteps = [
 ];
 
 export default function LandingPage() {
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };

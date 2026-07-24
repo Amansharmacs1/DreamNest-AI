@@ -12,6 +12,15 @@ export interface BuildingPreferences {
   houseStyle: string;
 }
 
+export interface StairPreferences {
+  stairType: 'Auto' | 'Straight' | 'L Shape' | 'U Shape';
+  location: 'Auto' | 'Near Entrance' | 'Living Room' | 'Exterior';
+  hasHandrails: boolean;
+  stairWidth: number;
+  stepHeight: number;
+  stepDepth: number;
+}
+
 export interface RoomPreferences {
   bedrooms: number;
   bathrooms: number;
@@ -53,6 +62,7 @@ export interface OtherPreferences {
 export interface HomePreferences {
   plot: PlotPreferences;
   building: BuildingPreferences;
+  stairs: StairPreferences;
   rooms: RoomPreferences;
   outdoor: OutdoorPreferences;
   preferences: OtherPreferences;
@@ -62,6 +72,8 @@ export interface RoomDimensions {
   id: string;
   name: string;
   category: 'living' | 'sleeping' | 'service' | 'outdoor' | 'circulation';
+  stairStyle?: 'Straight' | 'L Shape' | 'U Shape';
+  stairDirection?: 'north' | 'south' | 'east' | 'west';
   floor: number;
   x: number;
   y: number;

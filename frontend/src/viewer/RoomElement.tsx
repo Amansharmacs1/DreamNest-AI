@@ -13,6 +13,7 @@ export default function RoomElement({ room }: { room: any }) {
       case 'sleeping': return 'rgba(20, 184, 166, 0.2)';
       case 'service': return 'rgba(245, 158, 11, 0.2)';
       case 'outdoor': return 'rgba(34, 197, 94, 0.2)';
+      case 'circulation': return 'rgba(139, 92, 246, 0.2)';
       default: return 'rgba(148, 163, 184, 0.2)';
     }
   };
@@ -23,6 +24,7 @@ export default function RoomElement({ room }: { room: any }) {
       case 'sleeping': return '#14B8A6';
       case 'service': return '#F59E0B';
       case 'outdoor': return '#22C55E';
+      case 'circulation': return '#8B5CF6';
       default: return '#94A3B8';
     }
   };
@@ -120,9 +122,32 @@ export default function RoomElement({ room }: { room: any }) {
         width={room.width - 0.5} 
         height={room.length - 0.5} 
         fill="none"
-        stroke="#333"
         strokeWidth="0.1"
       />
+      
+      {/* Staircase Steps Representation */}
+      {room.category === 'circulation' && (
+        <g className="pointer-events-none">
+          {Array.from({ length: Math.floor(room.length / 1.5) }).map((_, i) => (
+            <line
+              key={i}
+              x1="0"
+              y1={i * 1.5}
+              x2={room.width}
+              y2={i * 1.5}
+              stroke={getCategoryBorder(room.category)}
+              strokeWidth="0.2"
+              opacity="0.5"
+            />
+          ))}
+          {/* UP/DOWN arrow based on floor */}
+          <polygon 
+            points={`${room.width / 2},1 ${room.width / 2 - 1},2.5 ${room.width / 2 + 1},2.5`} 
+            fill={getCategoryBorder(room.category)}
+            opacity="0.8"
+          />
+        </g>
+      )}
       <text 
         x={room.width / 2} 
         y={room.length / 2} 

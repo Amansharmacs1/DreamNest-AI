@@ -4,7 +4,7 @@ import type { InteriorTheme } from '@/store/threeStore';
 // Cache for materials to avoid recompiling shaders for every mesh
 const materialCache: Record<string, THREE.Material> = {};
 
-export type MaterialType = 'wall' | 'floor_living' | 'floor_sleeping' | 'floor_service' | 'floor_outdoor' | 'roof' | 'door' | 'glass' | 'grass' | 'concrete' | 'boundary' | 'road';
+export type MaterialType = 'wall' | 'floor_living' | 'floor_sleeping' | 'floor_service' | 'floor_outdoor' | 'roof' | 'door' | 'glass' | 'grass' | 'concrete' | 'boundary' | 'road' | 'wood' | 'metal';
 
 export const getMaterial = (type: MaterialType, transparent = false, theme: InteriorTheme = 'modern'): THREE.Material => {
   const cacheKey = `${type}_${transparent}_${theme}`;
@@ -106,6 +106,21 @@ export const getMaterial = (type: MaterialType, transparent = false, theme: Inte
         ...baseConfig,
         color: '#4ade80',
         roughness: 1.0,
+      });
+      break;
+    case 'wood':
+      material = new THREE.MeshStandardMaterial({
+        ...baseConfig,
+        color: '#8b5a2b', // Wood brown
+        roughness: 0.7,
+      });
+      break;
+    case 'metal':
+      material = new THREE.MeshStandardMaterial({
+        ...baseConfig,
+        color: '#9ca3af', // Metallic gray
+        metalness: 0.8,
+        roughness: 0.2,
       });
       break;
     default:

@@ -6,8 +6,21 @@ import * as THREE from 'three';
 
 export default function CameraController() {
   const cameraMode = useThreeStore((state) => state.cameraMode);
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const controlsRef = useRef<any>(null);
+  
+  const floorRaycaster = useRef(new THREE.Raycaster());
+  const wallRaycaster = useRef(new THREE.Raycaster());
+  
+  useEffect(() => {
+    floorRaycaster.current.layers.set(1);
+    wallRaycaster.current.layers.set(2);
+  }, []);
+
+  const downVector = new THREE.Vector3(0, -1, 0);
+  const lastRaycastTime = useRef(0);
+  const cachedFloorY = useRef(0);
+  const canMoveForward = useRef(true);
 
   // WASD Movement State
   const [movement, setMovement] = useState({
@@ -74,11 +87,51 @@ export default function CameraController() {
       direction.normalize();
       right.normalize();
 
-      controlsRef.current.moveForward(-direction.z * speed);
-      controlsRef.current.moveRight(right.x * speed);
-      
-      // Keep camera at eye level (no flying)
-      camera.position.y = 5.5; 
+      const isMoving = movement.forward || movement.backward || movement.left || movement.right;
+
+      if (isMoving) {
+        const moveDir = new THREE.Vector3();
+        if (movement.forward) moveDir.add(direction.clone().negate());
+        if (movement.backward) moveDir.add(direction);
+        if (movement.left) moveDir.add(right.clone().negate());
+        if (movement.right) moveDir.add(right);
+        moveDir.normalize();
+
+        const now = performance.now();
+        // Throttle heavy raycasts to every 100ms (10fps for physics is enough)
+        if (now - lastRaycastTime.current > 100) {
+          // 1. WALL COLLISION
+          wallRaycaster.current.set(camera.position, moveDir);
+          const wallHits = wallRaycaster.current.intersectObjects(scene.children, true).filter(
+            hit => hit.object.type === 'Mesh' && !hit.object.name.includes('Helper')
+          );
+          canMoveForward.current = wallHits.length === 0 || wallHits[0].distance > 2;
+
+          // 2. FLOOR DETECTION
+          floorRaycaster.current.set(
+            new THREE.Vector3(camera.position.x, camera.position.y + 5, camera.position.z), 
+            downVector
+          );
+          const floorHits = floorRaycaster.current.intersectObjects(scene.children, true).filter(
+            hit => hit.object.type === 'Mesh' && !hit.object.name.includes('Helper')
+          );
+          if (floorHits.length > 0) {
+            cachedFloorY.current = floorHits[0].point.y;
+          }
+          
+          lastRaycastTime.current = now;
+        }
+
+        // Only move if we aren't about to hit a wall
+        if (canMoveForward.current) {
+          controlsRef.current.moveForward(-direction.z * speed);
+          controlsRef.current.moveRight(right.x * speed);
+        }
+        
+        // Smooth interpolation for stairs/floor based on cached target
+        const targetY = cachedFloorY.current + 5.5;
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 15 * delta);
+      }
     }
   });
 

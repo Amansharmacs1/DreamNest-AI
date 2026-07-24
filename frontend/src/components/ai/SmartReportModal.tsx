@@ -3,8 +3,9 @@ import { useLayoutStore } from '@/store/layoutStore';
 import { useAIStore } from '@/store/aiStore';
 import { useWizardStore } from '@/store/wizardStore';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, CheckCircle, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
+import { Loader2, FileText, CheckCircle, AlertTriangle, TrendingUp, DollarSign, Send, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import emailjs from '@emailjs/browser';
 
 export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const { layout } = useLayoutStore();
@@ -12,6 +13,11 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
   const [cost, setCost] = useState<any>(null);
+  
+  const [emailAddress, setEmailAddress] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   const generateReport = async () => {
     setLoading(true);
@@ -66,6 +72,62 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
     }
   };
 
+  const sendEmail = async () => {
+    if (!emailAddress) {
+      setEmailError('Please enter an email address');
+      return;
+    }
+    
+    setIsSendingEmail(true);
+    setEmailError('');
+    
+    try {
+      // Format the report as text for the email
+      const reportText = `
+DreamNest AI Smart Report
+----------------------------------------
+
+Estimated Cost: ₹${cost?.totalEstimatedCost?.toLocaleString()}
+Civil Work: ₹${cost?.civilWork?.toLocaleString()}
+Finishing: ₹${cost?.finishing?.toLocaleString()}
+
+Strengths:
+${report?.strengths?.map((s: string) => '- ' + s.replace(/\*\*/g, '')).join('\n')}
+
+Weaknesses:
+${report?.weaknesses?.map((s: string) => '- ' + s.replace(/\*\*/g, '')).join('\n')}
+
+Suggestions:
+${report?.suggestions?.map((s: string) => '- ' + s.replace(/\*\*/g, '')).join('\n')}
+      `;
+
+      // NOTE: You must create an EmailJS account and replace these with your actual keys
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'default_service';
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_id';
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'public_key';
+
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          to_email: emailAddress,
+          message: reportText,
+          reply_to: "noreply@dreamnest.ai",
+        },
+        publicKey
+      );
+
+      setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 3000);
+      setEmailAddress('');
+    } catch (err: any) {
+      console.error('Failed to send email:', err);
+      setEmailError('Failed to send email. Ensure EmailJS keys are set in .env');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -86,11 +148,43 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
               <p className="text-sm text-slate-500">AI-generated architectural analysis & cost estimation</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            {report && <Button variant="outline" onClick={exportPDF}>Download PDF</Button>}
-            <Button variant="ghost" onClick={onClose}>Close</Button>
+          <div className="flex flex-wrap gap-2 items-center">
+            {report && (
+              <div className="flex items-center gap-2 mr-4 border-r border-slate-200 pr-4">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <input
+                    type="email"
+                    placeholder="Enter email to send"
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className="pl-9 pr-3 py-2 border rounded-md text-sm w-48 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={sendEmail} 
+                  disabled={isSendingEmail || emailSent}
+                  className={emailSent ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"}
+                >
+                  {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : 
+                   emailSent ? <CheckCircle className="w-4 h-4 mr-2" /> : 
+                   <Send className="w-4 h-4 mr-2" />}
+                  {emailSent ? "Sent!" : "Email"}
+                </Button>
+              </div>
+            )}
+            {report && <Button variant="outline" size="sm" onClick={exportPDF}>Download PDF</Button>}
+            <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
           </div>
         </div>
+
+        {emailError && (
+          <div className="bg-red-50 text-red-600 text-xs text-center py-2 border-b border-red-100">
+            {emailError}
+          </div>
+        )}
 
         <div id="smart-report-content" className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
           {!report && !loading ? (

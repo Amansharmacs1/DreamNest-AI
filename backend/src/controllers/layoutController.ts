@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { HomePreferences } from '../shared/types';
 import { generateDeterministicLayout } from '../algorithms/layoutEngine';
+import { generateAILayout } from '../algorithms/aiLayoutEngine';
 
-export const generateLayout = (req: Request, res: Response): void => {
+export const generateLayout = async (req: Request, res: Response): Promise<void> => {
   try {
     const preferences: HomePreferences = req.body;
 
@@ -12,8 +13,17 @@ export const generateLayout = (req: Request, res: Response): void => {
       return;
     }
 
-    // Call deterministic engine
-    const layout = generateDeterministicLayout(preferences);
+    // Try AI generation first
+    let layout;
+    try {
+      console.log('Attempting AI-driven layout generation...');
+      layout = await generateAILayout(preferences);
+      console.log('AI Layout generation successful.');
+    } catch (aiError) {
+      console.warn('AI Layout generation failed, falling back to deterministic layout.', aiError);
+      // Fallback to deterministic engine
+      layout = generateDeterministicLayout(preferences);
+    }
 
     // TODO: In phase 2, we would save this to the DB here.
     

@@ -32,15 +32,28 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
 
   const rooms: RoomDimensions[] = [];
   
+  // Calculate total area for rough floor distribution
+  let totalRequiredArea = 0;
+  const numFloors = Math.max(1, preferences.building.numberOfFloors);
+
+  // Staircase dimensions
+  const hasStairs = numFloors > 1;
+  const stairWidth = hasStairs ? 6 : 0;
+  const stairLength = hasStairs ? 12 : 0;
+  
   // Basic layout state
   let currentFloor = 0;
   let currentX = usableStartX;
   let currentY = usableStartY;
-  let rowMaxHeight = 0;
-  let currentFloorArea = 0;
+  
+  // Reserve top-left corner of the plot for stairs if multiple floors exist
+  if (hasStairs) {
+    currentX = usableStartX + stairWidth;
+  }
 
-  // Calculate total area for rough floor distribution
-  let totalRequiredArea = 0;
+  let rowMaxHeight = hasStairs ? stairLength : 0;
+  let currentFloorArea = hasStairs ? (stairWidth * stairLength) : 0;
+
   const calcArea = (w: number, l: number, count: number = 1) => totalRequiredArea += (w * l * count);
   
   if (preferences.rooms.kitchen > 0) calcArea(10, 10);
@@ -55,23 +68,58 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
   if (preferences.rooms.laundry > 0) calcArea(6, 6);
   if (preferences.rooms.balcony > 0) calcArea(10, 5);
 
-  const numFloors = Math.max(1, preferences.building.numberOfFloors);
   const targetAreaPerFloor = totalRequiredArea / numFloors;
+
+  // Add the initial staircase for Ground Floor
+  if (hasStairs) {
+    rooms.push({
+      id: generateId(),
+      name: 'Staircase',
+      category: 'circulation',
+      stairStyle: (preferences.stairs?.stairType !== 'Auto' ? preferences.stairs?.stairType : 'U Shape') as any,
+      stairDirection: 'north',
+      floor: 0,
+      x: usableStartX,
+      y: usableStartY,
+      width: stairWidth,
+      length: stairLength
+    });
+  }
 
   // Helper to place a room
   const placeRoom = (name: string, category: RoomDimensions['category'], width: number, length: number) => {
     const roomArea = width * length;
 
-    // Check if we should move to the next floor
     if (
       currentFloor < numFloors - 1 &&
       currentFloorArea + roomArea > targetAreaPerFloor * 1.1 // 10% buffer to avoid stranding small rooms
     ) {
       currentFloor++;
-      currentFloorArea = 0;
-      currentX = usableStartX;
-      currentY = usableStartY;
-      rowMaxHeight = 0;
+      
+      // Inject the staircase for the new floor at the exact same location
+      if (hasStairs) {
+        rooms.push({
+          id: generateId(),
+          name: 'Staircase',
+          category: 'circulation',
+          stairStyle: (preferences.stairs?.stairType !== 'Auto' ? preferences.stairs?.stairType : 'U Shape') as any,
+          stairDirection: 'north',
+          floor: currentFloor,
+          x: usableStartX,
+          y: usableStartY,
+          width: stairWidth,
+          length: stairLength
+        });
+        currentFloorArea = stairWidth * stairLength;
+        currentX = usableStartX + stairWidth;
+        currentY = usableStartY;
+        rowMaxHeight = stairLength;
+      } else {
+        currentFloorArea = 0;
+        currentX = usableStartX;
+        currentY = usableStartY;
+        rowMaxHeight = 0;
+      }
     }
 
     // Check if we exceed usable width, move to next row

@@ -1,6 +1,7 @@
 import { useLayoutStore } from '@/store/layoutStore';
 import PlotGenerator from './PlotGenerator';
 import RoomGenerator from './RoomGenerator';
+import StairGenerator from './stairs/StairGenerator';
 
 
 export default function HouseGenerator() {
@@ -20,9 +21,11 @@ export default function HouseGenerator() {
         length={layout.plotDimensions.length} 
       />
 
-      {/* 2. Generate Rooms (Walls, Floor, Roof) */}
+      {/* 2. Generate Rooms & Circulation */}
       {layout.rooms.map((room) => (
-        <RoomGenerator key={room.id} room={room} />
+        room.category === 'circulation' ? 
+          <StairGenerator key={room.id} room={room} /> :
+          <RoomGenerator key={room.id} room={room} />
       ))}
 
       {/* 3. Generate Doors (Future task: compute overlaps and punch holes) */}

@@ -43,7 +43,7 @@ export default function RoomGenerator({ room }: { room: any }) {
   return (
     <group position={[centerX, floorY, centerZ]}>
       {/* Floor */}
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} material={floorMat}>
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} material={floorMat} layers={1}>
         <planeGeometry args={[room.width, room.length]} />
       </mesh>
 
@@ -57,22 +57,22 @@ export default function RoomGenerator({ room }: { room: any }) {
       {/* Walls */}
       <group position={[0, WALL_HEIGHT / 2, 0]}>
         {/* North Wall (Top in 2D) */}
-        <mesh castShadow receiveShadow position={[0, 0, -room.length / 2]} material={wallMat}>
+        <mesh castShadow receiveShadow position={[0, 0, -room.length / 2]} material={wallMat} layers={2}>
           <boxGeometry args={[room.width + WALL_THICKNESS, WALL_HEIGHT, WALL_THICKNESS]} />
         </mesh>
         
         {/* South Wall (Bottom in 2D) */}
-        <mesh castShadow receiveShadow position={[0, 0, room.length / 2]} material={wallMat}>
+        <mesh castShadow receiveShadow position={[0, 0, room.length / 2]} material={wallMat} layers={2}>
           <boxGeometry args={[room.width + WALL_THICKNESS, WALL_HEIGHT, WALL_THICKNESS]} />
         </mesh>
 
         {/* East Wall (Right in 2D) */}
-        <mesh castShadow receiveShadow position={[room.width / 2, 0, 0]} material={wallMat}>
+        <mesh castShadow receiveShadow position={[room.width / 2, 0, 0]} material={wallMat} layers={2}>
           <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, room.length - WALL_THICKNESS]} />
         </mesh>
 
         {/* West Wall (Left in 2D) */}
-        <mesh castShadow receiveShadow position={[-room.width / 2, 0, 0]} material={wallMat}>
+        <mesh castShadow receiveShadow position={[-room.width / 2, 0, 0]} material={wallMat} layers={2}>
           <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, room.length - WALL_THICKNESS]} />
         </mesh>
       </group>
