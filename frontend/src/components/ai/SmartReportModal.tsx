@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 import { useAIStore } from '@/store/aiStore';
+import { useWizardStore } from '@/store/wizardStore';
 import { Button } from '@/components/ui/button';
 import { Loader2, FileText, CheckCircle, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -25,10 +26,11 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
       setReport(analysisData);
 
       // Fetch Cost
+      const { preferences } = useWizardStore.getState();
       const resCost = await fetch(import.meta.env.VITE_API_URL + '/ai/cost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ layout, budget: 150000, provider })
+        body: JSON.stringify({ layout, budget: preferences.plot.budget, provider })
       });
       const costData = await resCost.json();
       setCost(costData);
@@ -112,21 +114,23 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="p-4 bg-green-50 rounded-lg">
                       <p className="text-sm text-green-700 font-medium">Total Estimate</p>
-                      <p className="text-2xl font-bold text-green-900">${cost.totalEstimatedCost?.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-green-900">₹{cost.totalEstimatedCost?.toLocaleString()}</p>
                     </div>
                     <div className="p-4 bg-slate-50 rounded-lg">
                       <p className="text-sm text-slate-600 font-medium">Civil Work</p>
-                      <p className="text-xl font-bold text-slate-800">${cost.civilWork?.toLocaleString()}</p>
+                      <p className="text-xl font-bold text-slate-800">₹{cost.civilWork?.toLocaleString()}</p>
                     </div>
                     <div className="p-4 bg-slate-50 rounded-lg">
                       <p className="text-sm text-slate-600 font-medium">Finishing</p>
-                      <p className="text-xl font-bold text-slate-800">${cost.finishing?.toLocaleString()}</p>
+                      <p className="text-xl font-bold text-slate-800">₹{cost.finishing?.toLocaleString()}</p>
                     </div>
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm mb-2 text-slate-700">Cost Saving Suggestions</h4>
                     <ul className="list-disc pl-5 space-y-1 text-sm text-slate-600">
-                      {cost.savingsSuggestions?.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                      {cost.savingsSuggestions?.map((s: string, i: number) => (
+                        <li key={i} dangerouslySetInnerHTML={{ __html: s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-800">$1</strong>') }} />
+                      ))}
                     </ul>
                   </div>
                 </div>
@@ -141,7 +145,8 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
                   <ul className="space-y-3">
                     {report.strengths?.map((s: string, i: number) => (
                       <li key={i} className="flex gap-2 text-sm text-slate-600">
-                        <span className="text-emerald-500 mt-0.5">•</span> {s}
+                        <span className="text-emerald-500 mt-0.5">•</span> 
+                        <span dangerouslySetInnerHTML={{ __html: s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-800">$1</strong>') }} />
                       </li>
                     ))}
                   </ul>
@@ -153,7 +158,8 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
                   <ul className="space-y-3">
                     {report.weaknesses?.map((s: string, i: number) => (
                       <li key={i} className="flex gap-2 text-sm text-slate-600">
-                        <span className="text-amber-500 mt-0.5">•</span> {s}
+                        <span className="text-amber-500 mt-0.5">•</span> 
+                        <span dangerouslySetInnerHTML={{ __html: s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-800">$1</strong>') }} />
                       </li>
                     ))}
                   </ul>
@@ -167,7 +173,8 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
                 <ul className="space-y-3">
                   {report.suggestions?.map((s: string, i: number) => (
                     <li key={i} className="flex gap-2 text-sm text-slate-600">
-                      <span className="text-blue-500 mt-0.5">•</span> {s}
+                      <span className="text-blue-500 mt-0.5">•</span> 
+                      <span dangerouslySetInnerHTML={{ __html: s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-800">$1</strong>') }} />
                     </li>
                   ))}
                 </ul>
@@ -175,7 +182,7 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
 
               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <h3 className="text-lg font-bold mb-2 text-slate-800">Traffic Flow Analysis</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{report.trafficFlow}</p>
+                <p className="text-slate-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: report.trafficFlow.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-800">$1</strong>') }} />
               </div>
 
             </div>

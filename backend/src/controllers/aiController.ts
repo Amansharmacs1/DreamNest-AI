@@ -69,7 +69,9 @@ export const generateCostEstimate = async (req: Request, res: Response) => {
         })),
         savingsSuggestions: z.array(z.string())
       }),
-      prompt: `Generate a construction cost estimate for a house with layout: ${JSON.stringify(layout)} and user budget: ${budget}. Return realistic figures in the same currency (e.g. USD).`
+      prompt: `Generate a construction cost estimate for a house in India. Layout: ${JSON.stringify(layout)}. User budget preference: ${budget}. 
+      Calculate the total square footage from the layout. Standard construction rates in India are ₹1,500 to ₹2,500 per sq ft depending on the budget preference. 
+      Return highly realistic figures in Indian Rupees (INR). Do not arbitrarily scale down to a random number. Calculate the actual market cost.`
     });
 
     res.json(result.object);
