@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import layoutRoutes from './routes/layoutRoutes';
+import aiRoutes from './routes/aiRoutes';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/layout', layoutRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {

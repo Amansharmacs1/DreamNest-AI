@@ -11,6 +11,7 @@ import { OutdoorStep } from '@/forms/OutdoorStep';
 import { PreferencesStep } from '@/forms/PreferencesStep';
 import { generateLayoutAPI } from '@/services/api';
 import { useLayoutStore } from '@/store/layoutStore';
+import AIPromptBar from '@/components/ai/AIPromptBar';
 
 const steps = ['Plot', 'Building', 'Rooms', 'Outdoor', 'Preferences'];
 
@@ -61,6 +62,10 @@ export default function WizardPage() {
       </header>
       
       <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:p-12">
+        <div className="mb-8">
+          <AIPromptBar />
+        </div>
+
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between mb-2">

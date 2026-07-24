@@ -10,7 +10,8 @@ import SceneEngine from '../three/SceneEngine';
 import ControlPanel from '../three/ui/ControlPanel';
 import Minimap from '../three/ui/Minimap';
 import FirstPersonHUD from '../three/ui/FirstPersonHUD';
-import { Box } from 'lucide-react';
+import { Box, Sparkles } from 'lucide-react';
+import SmartReportModal from '../components/ai/SmartReportModal';
 
 export default function FloorPlanViewer() {
   const { layout, undo, redo, history, future, reset } = useLayoutStore();
@@ -23,6 +24,7 @@ export default function FloorPlanViewer() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const [activeFloor, setActiveFloor] = useState(0);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   if (!layout) {
     return (
@@ -38,12 +40,16 @@ export default function FloorPlanViewer() {
   const exportPDF = async () => {
     if (!svgRef.current) return;
     try {
-      const canvas = await html2canvas(svgRef.current.parentElement as HTMLElement);
+      const canvas = await html2canvas(svgRef.current.parentElement as HTMLElement, { scale: 2, useCORS: true });
       const imgData = canvas.toDataURL('image/png');
+      
       const pdf = new jsPDF({
-        orientation: 'landscape',
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
       });
-      pdf.addImage(imgData, 'PNG', 10, 10, 277, 190);
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       pdf.save('DreamNest-FloorPlan.pdf');
     } catch (e) {
       console.error('Export failed', e);
@@ -115,6 +121,9 @@ export default function FloorPlanViewer() {
           </Button>
           <Button variant="outline" size="sm" onClick={reset}>
             <RefreshCcw className="w-4 h-4 mr-2" /> Reset
+          </Button>
+          <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setIsReportOpen(true)}>
+            <Sparkles className="w-4 h-4 mr-2" /> Smart Report
           </Button>
           <Button variant={viewMode === '3d' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode(v => v === '2d' ? '3d' : '2d')}>
             <Box className="w-4 h-4 mr-2" /> {viewMode === '2d' ? 'View 3D' : 'View 2D'}
@@ -216,6 +225,7 @@ export default function FloorPlanViewer() {
           <FirstPersonHUD />
         </main>
       )}
+      <SmartReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
     </div>
   );
 }
