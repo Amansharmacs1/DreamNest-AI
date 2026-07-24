@@ -114,7 +114,7 @@ export default function AIChatPanel() {
       {/* Floating Toggle Button */}
       <Button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform z-50 flex items-center justify-center"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform z-50 flex items-center justify-center"
       >
         <Bot className="w-6 h-6 text-white" />
       </Button>
@@ -126,8 +126,8 @@ export default function AIChatPanel() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className={`fixed bottom-24 right-6 bg-white border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden z-50 transition-all duration-300 ${
-              isExpanded ? 'w-[600px] h-[80vh]' : 'w-[400px] h-[600px] max-h-[70vh]'
+            className={`fixed bottom-20 right-4 md:bottom-24 md:right-6 bg-white border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden z-50 transition-all duration-300 ${
+              isExpanded ? 'w-[calc(100vw-2rem)] md:w-[600px] h-[80vh]' : 'w-[calc(100vw-2rem)] md:w-[400px] h-[600px] max-h-[70vh]'
             }`}
           >
             {/* Header */}

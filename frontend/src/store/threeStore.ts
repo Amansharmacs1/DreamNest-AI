@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
 export type CameraMode = 'orbit' | 'first-person';
+export type InteriorTheme = 'modern' | 'minimal' | 'luxury' | 'industrial' | 'scandinavian' | 'japandi' | 'traditional';
 
 export interface ThreeState {
   showRoof: boolean;
@@ -11,6 +12,7 @@ export interface ThreeState {
   wireframe: boolean;
   timeOfDay: TimeOfDay;
   cameraMode: CameraMode;
+  theme: InteriorTheme;
   
   // Toggles
   toggleRoof: () => void;
@@ -22,6 +24,7 @@ export interface ThreeState {
   // Setters
   setTimeOfDay: (time: TimeOfDay) => void;
   setCameraMode: (mode: CameraMode) => void;
+  setTheme: (theme: InteriorTheme) => void;
 }
 
 export const useThreeStore = create<ThreeState>((set) => ({
@@ -32,6 +35,7 @@ export const useThreeStore = create<ThreeState>((set) => ({
   wireframe: false,
   timeOfDay: 'afternoon',
   cameraMode: 'orbit',
+  theme: 'modern',
   
   toggleRoof: () => set((state) => ({ showRoof: !state.showRoof })),
   toggleLabels: () => set((state) => ({ showLabels: !state.showLabels })),
@@ -41,4 +45,5 @@ export const useThreeStore = create<ThreeState>((set) => ({
   
   setTimeOfDay: (timeOfDay) => set({ timeOfDay }),
   setCameraMode: (cameraMode) => set({ cameraMode }),
+  setTheme: (theme) => set({ theme }),
 }));

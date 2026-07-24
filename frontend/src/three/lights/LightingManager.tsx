@@ -1,38 +1,37 @@
 import { useThreeStore } from '@/store/threeStore';
+import { useWizardStore } from '@/store/wizardStore';
 import { useRef } from 'react';
 import { DirectionalLight } from 'three';
+import { calculateSunPosition } from '../utils/sunUtils';
 
 export default function LightingManager() {
   const timeOfDay = useThreeStore((state) => state.timeOfDay);
   const showShadows = useThreeStore((state) => state.showShadows);
+  const facingDirection = useWizardStore((state) => state.preferences.plot.facingDirection);
   const dirLightRef = useRef<DirectionalLight>(null);
 
-  // Define lighting parameters based on time of day
   const getLightConfig = () => {
     switch (timeOfDay) {
       case 'morning':
         return {
-          ambientIntensity: 0.6,
+          ambientIntensity: 0.5,
           ambientColor: '#ffe5cc',
-          directionalIntensity: 1.2,
+          directionalIntensity: 1.5,
           directionalColor: '#ffedd6',
-          position: [50, 30, -50] as [number, number, number], // East-ish
         };
       case 'afternoon':
         return {
           ambientIntensity: 0.8,
           ambientColor: '#ffffff',
-          directionalIntensity: 1.5,
+          directionalIntensity: 2.0,
           directionalColor: '#ffffff',
-          position: [10, 80, 10] as [number, number, number], // High up
         };
       case 'evening':
         return {
           ambientIntensity: 0.4,
           ambientColor: '#ffcda8',
-          directionalIntensity: 1.0,
+          directionalIntensity: 1.2,
           directionalColor: '#ffa057',
-          position: [-50, 20, 50] as [number, number, number], // West-ish
         };
       case 'night':
         return {
@@ -40,12 +39,12 @@ export default function LightingManager() {
           ambientColor: '#455b82',
           directionalIntensity: 0.2,
           directionalColor: '#5c7fb8',
-          position: [0, 50, 0] as [number, number, number], // Moonlight
         };
     }
   };
 
   const config = getLightConfig();
+  const sunPos = calculateSunPosition(timeOfDay, facingDirection);
 
   return (
     <>
@@ -53,17 +52,17 @@ export default function LightingManager() {
       <directionalLight
         ref={dirLightRef}
         castShadow={showShadows}
-        position={config.position}
+        position={sunPos}
         intensity={config.directionalIntensity}
         color={config.directionalColor}
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-50}
-        shadow-camera-right={50}
-        shadow-camera-top={50}
-        shadow-camera-bottom={-50}
+        shadow-camera-left={-80}
+        shadow-camera-right={80}
+        shadow-camera-top={80}
+        shadow-camera-bottom={-80}
         shadow-camera-near={1}
-        shadow-camera-far={200}
-        shadow-bias={-0.001}
+        shadow-camera-far={300}
+        shadow-bias={-0.0005}
       />
     </>
   );

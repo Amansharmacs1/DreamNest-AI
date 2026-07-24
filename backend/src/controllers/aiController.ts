@@ -15,13 +15,21 @@ export const aiChat = async (req: Request, res: Response) => {
     The user's current layout is: ${layout ? JSON.stringify(layout) : 'Not generated yet'}.
     Be concise, helpful, and friendly.`;
 
-    const result = streamText({
+    const result = await streamText({
       model,
       system: systemPrompt,
       messages,
     });
 
-    result.pipeDataStreamToResponse(res);
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+    });
+
+    for await (const chunk of result.textStream) {
+      res.write(`0:${JSON.stringify(chunk)}\n`);
+    }
+    res.end();
   } catch (error: any) {
     console.error('Chat error:', error);
     res.status(500).json({ error: error.message });

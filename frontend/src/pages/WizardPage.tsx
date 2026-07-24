@@ -61,7 +61,7 @@ export default function WizardPage() {
         </div>
       </header>
       
-      <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:p-12">
+      <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-12">
         <div className="mb-8">
           <AIPromptBar />
         </div>

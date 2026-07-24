@@ -11,6 +11,7 @@ export default function RoomGenerator({ room }: { room: any }) {
   const showLabels = useThreeStore((state) => state.showLabels);
   const transparentWalls = useThreeStore((state) => state.transparentWalls);
   const wireframe = useThreeStore((state) => state.wireframe);
+  const theme = useThreeStore((state) => state.theme);
 
   const getFloorMaterialType = (): MaterialType => {
     switch (room.category) {
@@ -22,15 +23,15 @@ export default function RoomGenerator({ room }: { room: any }) {
     }
   };
 
-  const wallMat = getMaterial('wall', transparentWalls) as THREE.MeshStandardMaterial;
+  const wallMat = getMaterial('wall', transparentWalls, theme) as THREE.MeshStandardMaterial;
   if (wireframe) {
     wallMat.wireframe = true;
   } else {
     wallMat.wireframe = false;
   }
 
-  const floorMat = getMaterial(getFloorMaterialType());
-  const roofMat = getMaterial('roof');
+  const floorMat = getMaterial(getFloorMaterialType(), false, theme);
+  const roofMat = getMaterial('roof', false, theme);
 
   // Room coordinates are top-left based (from 2D SVG layout)
   // Three.js meshes are center-based, so we shift by half width/length

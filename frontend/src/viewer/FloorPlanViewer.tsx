@@ -105,14 +105,14 @@ export default function FloorPlanViewer() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <header className="flex items-center justify-between p-4 bg-white border-b shadow-sm z-10">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-col lg:flex-row items-center justify-between p-4 bg-white border-b shadow-sm z-10 gap-4">
+        <div className="flex items-center gap-4 w-full lg:w-auto">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
             <Home className="w-5 h-5 text-primary" />
           </Button>
-          <h1 className="text-xl font-bold">Floor Plan Viewer</h1>
+          <h1 className="text-xl font-bold truncate">Floor Plan Viewer</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
           <Button variant="outline" size="sm" onClick={undo} disabled={history.length === 0}>
             <Undo className="w-4 h-4 mr-2" /> Undo
           </Button>

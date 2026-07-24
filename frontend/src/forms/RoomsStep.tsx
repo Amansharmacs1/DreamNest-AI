@@ -40,7 +40,7 @@ export function RoomsStep({ onNext }: { onNext: () => void }) {
     <form id="rooms-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <h2 className="text-2xl font-bold mb-4">Rooms Requirement</h2>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {fields.map((field) => (
           <div key={field} className="space-y-2">
             <Label className="capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}</Label>

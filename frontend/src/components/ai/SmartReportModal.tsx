@@ -111,7 +111,7 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
                   <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
                     <DollarSign className="w-5 h-5 text-green-600" /> Estimated Construction Cost
                   </h3>
-                  <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                     <div className="p-4 bg-green-50 rounded-lg">
                       <p className="text-sm text-green-700 font-medium">Total Estimate</p>
                       <p className="text-2xl font-bold text-green-900">₹{cost.totalEstimatedCost?.toLocaleString()}</p>
@@ -137,7 +137,7 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
               )}
 
               {/* Analysis Section */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                   <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-emerald-700">
                     <CheckCircle className="w-5 h-5" /> Strengths

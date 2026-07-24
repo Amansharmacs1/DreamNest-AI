@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Home, Compass, Layers } from 'lucide-react';
+import { Home, Compass, Layers, Ruler, Brain, Box, FileText } from 'lucide-react';
 
 const features = [
   { icon: <Compass className="w-6 h-6 text-primary" />, title: 'Smart Validation', description: 'Automatically checks for overlaps and maintains proper dimensions.' },
@@ -9,7 +9,18 @@ const features = [
   { icon: <Home className="w-6 h-6 text-primary" />, title: 'Vastu & Preferences', description: 'Incorporates your custom lifestyle preferences into the blueprint.' }
 ];
 
+const processSteps = [
+  { icon: <Ruler className="w-8 h-8 text-indigo-600" />, title: '1. Set Parameters', description: 'Enter your plot dimensions, budget, and specific lifestyle requirements.' },
+  { icon: <Brain className="w-8 h-8 text-indigo-600" />, title: '2. AI Generation', description: 'Our procedural engine instantly calculates the optimal, practical layout.' },
+  { icon: <Box className="w-8 h-8 text-indigo-600" />, title: '3. 3D Visualization', description: 'Explore your generated floor plan in both 2D blueprint and immersive 3D space.' },
+  { icon: <FileText className="w-8 h-8 text-indigo-600" />, title: '4. Smart Report', description: 'Export your architectural blueprint and get an AI-driven construction cost estimate.' }
+];
+
 export default function LandingPage() {
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
       {/* Navbar */}
@@ -19,8 +30,11 @@ export default function LandingPage() {
           <span className="text-xl font-bold tracking-tight text-main">DreamNest AI</span>
         </div>
         <div className="space-x-4">
-          <Button variant="ghost" className="hidden sm:inline-flex">Features</Button>
-          <Button variant="ghost" className="hidden sm:inline-flex">How it Works</Button>
+          <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => scrollTo('how-it-works')}>How it Works</Button>
+          <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => scrollTo('features')}>Features</Button>
+          <Link to="/about">
+            <Button variant="ghost" className="hidden sm:inline-flex">About</Button>
+          </Link>
           <Link to="/wizard">
             <Button>Start Designing</Button>
           </Link>
@@ -28,7 +42,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      <main id="hero" className="flex-1 flex flex-col items-center justify-center px-6 relative overflow-hidden">
         {/* Decorative Background Elements */}
         <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl -z-10 animate-pulse" />
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-3xl -z-10" />
@@ -53,7 +67,7 @@ export default function LandingPage() {
                 Start Designing
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg h-14 px-8 rounded-full">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg h-14 px-8 rounded-full" onClick={() => scrollTo('features')}>
               Learn More
             </Button>
           </div>
@@ -92,8 +106,49 @@ export default function LandingPage() {
         </motion.div>
       </main>
 
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-24 bg-slate-50 z-10 border-t border-b border-gray-100 relative overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">How DreamNest AI Works</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">From an empty plot to a fully realized architectural blueprint in four simple steps.</p>
+          </div>
+          
+          <div className="relative">
+            {/* Connecting line for desktop */}
+            <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-1 bg-gradient-to-r from-indigo-200 via-blue-200 to-indigo-200 z-0"></div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 relative z-10">
+              {processSteps.map((step, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ delay: i * 0.2, duration: 0.5 }}
+                  className="flex flex-col items-center text-center group"
+                >
+                  <div className="w-24 h-24 rounded-full bg-white shadow-xl shadow-indigo-500/10 border border-indigo-50 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 relative z-10">
+                    <div className="absolute inset-0 rounded-full bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-0 group-hover:scale-100 origin-center"></div>
+                    <div className="relative z-20">
+                      {step.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-3">{step.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="py-24 bg-white z-10">
+      <section id="features" className="py-24 bg-white z-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-main mb-4">Why choose DreamNest AI?</h2>

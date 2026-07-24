@@ -5,20 +5,24 @@ import CameraController from './camera/CameraController';
 import LightingManager from './lights/LightingManager';
 import HouseGenerator from './generators/HouseGenerator';
 import { useThreeStore } from '@/store/threeStore';
+import { useWizardStore } from '@/store/wizardStore';
+import { calculateSunPosition } from './utils/sunUtils';
 
 export default function SceneEngine() {
   const timeOfDay = useThreeStore((state) => state.timeOfDay);
+  const facingDirection = useWizardStore((state) => state.preferences.plot.facingDirection);
 
-  const getSkyConfig = () => {
+  const getSkyTurbidityAndRayleigh = () => {
     switch (timeOfDay) {
-      case 'morning': return { sunPosition: [50, 10, -50], turbidity: 10, rayleigh: 2 };
-      case 'afternoon': return { sunPosition: [10, 80, 10], turbidity: 2, rayleigh: 0.5 };
-      case 'evening': return { sunPosition: [-50, 5, 50], turbidity: 20, rayleigh: 4 };
-      case 'night': return { sunPosition: [0, -50, 0], turbidity: 5, rayleigh: 0.1 };
+      case 'morning': return { turbidity: 10, rayleigh: 2 };
+      case 'afternoon': return { turbidity: 2, rayleigh: 0.5 };
+      case 'evening': return { turbidity: 20, rayleigh: 4 };
+      case 'night': return { turbidity: 5, rayleigh: 0.1 };
     }
   };
 
-  const skyConfig = getSkyConfig();
+  const { turbidity, rayleigh } = getSkyTurbidityAndRayleigh() || { turbidity: 2, rayleigh: 0.5 };
+  const sunPosition = calculateSunPosition(timeOfDay, facingDirection);
 
   return (
     <div id="canvas-container" className="w-full h-full relative cursor-crosshair">
@@ -27,9 +31,9 @@ export default function SceneEngine() {
         
         {/* Environment & Sky */}
         <Sky 
-          sunPosition={skyConfig.sunPosition as [number, number, number]} 
-          turbidity={skyConfig.turbidity} 
-          rayleigh={skyConfig.rayleigh} 
+          sunPosition={sunPosition as [number, number, number]} 
+          turbidity={turbidity} 
+          rayleigh={rayleigh} 
         />
         {timeOfDay === 'night' && <fog attach="fog" args={['#050510', 10, 100]} />}
         
