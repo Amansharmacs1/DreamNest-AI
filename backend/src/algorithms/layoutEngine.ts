@@ -191,6 +191,47 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
   // 5. Outdoor spaces inside usable area (like balconies/terraces for 2D plan approximation)
   if (preferences.rooms.balcony > 0) placeRoom('Balcony', 'outdoor', 10, 5);
 
+  // 6. Outdoor Preferences (Swimming Pool, Solar Panels, Garden, Parking, etc.)
+  if (preferences.outdoor) {
+    if (preferences.outdoor.swimmingPool) {
+      placeRoom('Swimming Pool', 'outdoor', 14, 22);
+    }
+    if (preferences.outdoor.garden) {
+      placeRoom('Garden', 'outdoor', 15, 15);
+    }
+    if (preferences.outdoor.backyard) {
+      placeRoom('Backyard', 'outdoor', 15, 10);
+    }
+    if (preferences.outdoor.parking) {
+      const cars = Math.max(1, preferences.outdoor.numberOfCars || 1);
+      placeRoom('Parking', 'outdoor', Math.min(usableWidth, 12 * cars), 18);
+    }
+    if (preferences.outdoor.kidsArea) {
+      placeRoom('Kids Play Area', 'outdoor', 12, 12);
+    }
+    if (preferences.outdoor.outdoorSeating) {
+      placeRoom('Outdoor Patio', 'outdoor', 12, 14);
+    }
+    if (preferences.outdoor.rainwaterHarvesting) {
+      placeRoom('Rainwater Tank', 'outdoor', 8, 8);
+    }
+
+    // Solar Panels placed on top rooftop level
+    if (preferences.outdoor.solarPanels) {
+      const topFloor = Math.max(0, numFloors - 1);
+      rooms.push({
+        id: generateId(),
+        name: 'Solar Panels',
+        category: 'outdoor',
+        floor: topFloor,
+        x: usableStartX + 2,
+        y: usableStartY + 2,
+        width: 12,
+        length: 16
+      });
+    }
+  }
+
   return {
     plotDimensions: {
       width: plotWidth,

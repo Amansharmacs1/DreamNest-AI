@@ -7,8 +7,9 @@ const STEP_DEPTH = 1.0;   // Approx 12 inches
 
 export default function StairGenerator({ room }: { room: any }) {
   const theme = useThreeStore((state) => state.theme);
-  const stairMat = getMaterial('wood', false, theme);
-  const railMat = getMaterial('metal', false, theme);
+  const wireframe = useThreeStore((state) => state.wireframe);
+  const stairMat = getMaterial('wood', false, wireframe, theme);
+  const railMat = getMaterial('metal', false, wireframe, theme);
 
   const centerX = room.x + room.width / 2;
   const centerZ = room.y + room.length / 2;

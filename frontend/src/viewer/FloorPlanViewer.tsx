@@ -40,19 +40,23 @@ export default function FloorPlanViewer() {
   const exportPDF = async () => {
     if (!svgRef.current) return;
     try {
-      const canvas = await html2canvas(svgRef.current.parentElement as HTMLElement, { scale: 2, useCORS: true });
+      const canvas = await html2canvas(svgRef.current.parentElement as HTMLElement, { scale: 2, useCORS: true, logging: false });
       const imgData = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
+        orientation: canvas.width > canvas.height ? 'l' : 'p',
+        unit: 'mm',
+        format: 'a4'
       });
       
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save('DreamNest-FloorPlan.pdf');
     } catch (e) {
       console.error('Export failed', e);
+      alert('Failed to export PDF. Please try again.');
     }
   };
 

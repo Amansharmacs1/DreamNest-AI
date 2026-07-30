@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 
 export default function RoomElement({ room }: { room: any }) {
@@ -7,7 +7,18 @@ export default function RoomElement({ room }: { room: any }) {
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ mouseX: 0, mouseY: 0, roomX: 0, roomY: 0, roomWidth: 0, roomLength: 0 });
 
+  const roomNameLower = (room.name || '').toLowerCase();
+  const isSwimmingPool = roomNameLower.includes('pool');
+  const isSolarPanels = roomNameLower.includes('solar');
+  const isGarden = roomNameLower.includes('garden') || roomNameLower.includes('backyard') || roomNameLower.includes('kids');
+  const isParking = roomNameLower.includes('parking');
+
   const getCategoryColor = (category: string) => {
+    if (isSwimmingPool) return 'rgba(14, 165, 233, 0.35)';
+    if (isSolarPanels) return 'rgba(30, 58, 138, 0.45)';
+    if (isGarden) return 'rgba(34, 197, 94, 0.3)';
+    if (isParking) return 'rgba(71, 85, 105, 0.3)';
+
     switch (category) {
       case 'living': return 'rgba(37, 99, 235, 0.2)';
       case 'sleeping': return 'rgba(20, 184, 166, 0.2)';
@@ -19,6 +30,11 @@ export default function RoomElement({ room }: { room: any }) {
   };
   
   const getCategoryBorder = (category: string) => {
+    if (isSwimmingPool) return '#0284C7';
+    if (isSolarPanels) return '#1D4ED8';
+    if (isGarden) return '#15803D';
+    if (isParking) return '#334155';
+
     switch (category) {
       case 'living': return '#2563EB';
       case 'sleeping': return '#14B8A6';
@@ -41,70 +57,76 @@ export default function RoomElement({ room }: { room: any }) {
     setDragStart({ mouseX: e.clientX, mouseY: e.clientY, roomX: room.x, roomY: room.y, roomWidth: room.width, roomLength: room.length });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if ((!isDragging && !isResizing) || !layout) return;
-    
-    // Calculate total movement from the start of the drag
-    const dx = (e.clientX - dragStart.mouseX) / 10;
-    const dy = (e.clientY - dragStart.mouseY) / 10;
-    
-    if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-       let newX = dragStart.roomX;
-       let newY = dragStart.roomY;
-       let newWidth = dragStart.roomWidth;
-       let newLength = dragStart.roomLength;
+  useEffect(() => {
+    if (!isDragging && !isResizing) return;
 
-       if (isDragging) {
-         newX = dragStart.roomX + dx;
-         newY = dragStart.roomY + dy;
-       } else if (isResizing) {
-         newWidth = Math.max(2, dragStart.roomWidth + dx); // min width 2 ft
-         newLength = Math.max(2, dragStart.roomLength + dy); // min length 2 ft
-       }
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      if (!layout) return;
+      
+      const dx = (e.clientX - dragStart.mouseX) / 10;
+      const dy = (e.clientY - dragStart.mouseY) / 10;
+      
+      if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+        let newX = dragStart.roomX;
+        let newY = dragStart.roomY;
+        let newWidth = dragStart.roomWidth;
+        let newLength = dragStart.roomLength;
 
-       // Check for overlaps with other rooms
-       const overlaps = layout.rooms.some((otherRoom: any) => {
-         // Only check collision against rooms on the same floor
-         if (otherRoom.id === room.id || (otherRoom.floor || 0) !== (room.floor || 0)) return false;
-         
-         // Buffer to prevent float glitches
-         return (
-           newX + 0.05 < otherRoom.x + otherRoom.width &&
-           newX + newWidth - 0.05 > otherRoom.x &&
-           newY + 0.05 < otherRoom.y + otherRoom.length &&
-           newY + newLength - 0.05 > otherRoom.y
-         );
-       });
+        if (isDragging) {
+          newX = Math.round(dragStart.roomX + dx);
+          newY = Math.round(dragStart.roomY + dy);
+        } else if (isResizing) {
+          newWidth = Math.max(2, Math.round(dragStart.roomWidth + dx));
+          newLength = Math.max(2, Math.round(dragStart.roomLength + dy));
+        }
 
-       // Check if outside usable area boundaries
-       const outOfBounds = 
-           newX < layout.usableArea.startX ||
-           newX + newWidth > layout.usableArea.startX + layout.usableArea.width ||
-           newY < layout.usableArea.startY ||
-           newY + newLength > layout.usableArea.startY + layout.usableArea.length;
+        // Check for overlaps with other rooms on the same floor
+        const overlaps = layout.rooms.some((otherRoom: any) => {
+          if (otherRoom.id === room.id || (otherRoom.floor || 0) !== (room.floor || 0)) return false;
+          
+          return (
+            newX + 0.05 < otherRoom.x + otherRoom.width &&
+            newX + newWidth - 0.05 > otherRoom.x &&
+            newY + 0.05 < otherRoom.y + otherRoom.length &&
+            newY + newLength - 0.05 > otherRoom.y
+          );
+        });
 
-       if (!overlaps && !outOfBounds) {
-         if (isDragging) {
-           updateRoom(room.id, { x: newX, y: newY });
-         } else if (isResizing) {
-           updateRoom(room.id, { width: newWidth, length: newLength });
-         }
-       }
-    }
-  };
+        // Check usable area boundaries
+        const outOfBounds = 
+            newX < layout.usableArea.startX ||
+            newX + newWidth > layout.usableArea.startX + layout.usableArea.width ||
+            newY < layout.usableArea.startY ||
+            newY + newLength > layout.usableArea.startY + layout.usableArea.length;
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setIsResizing(false);
-  };
+        if (!overlaps && !outOfBounds) {
+          if (isDragging) {
+            updateRoom(room.id, { x: newX, y: newY });
+          } else if (isResizing) {
+            updateRoom(room.id, { width: newWidth, length: newLength });
+          }
+        }
+      }
+    };
+
+    const handleWindowMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+  }, [isDragging, isResizing, dragStart, layout, room.id, room.floor, updateRoom]);
 
   return (
     <g 
-      className="room cursor-move group"
+      className="room cursor-move group select-none"
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
       transform={`translate(${room.x}, ${room.y})`}
     >
       <rect 
@@ -114,16 +136,56 @@ export default function RoomElement({ room }: { room: any }) {
         fill={getCategoryColor(room.category)}
         stroke={getCategoryBorder(room.category)}
         strokeWidth="0.5"
+        rx={isSwimmingPool ? 0.8 : 0}
       />
+
+      {/* Swimming Pool Wave Pattern */}
+      {isSwimmingPool && (
+        <g className="pointer-events-none" opacity="0.6">
+          <rect x="0.5" y="0.5" width={room.width - 1} height={room.length - 1} fill="none" stroke="#38BDF8" strokeWidth="0.3" strokeDasharray="1,1" rx="0.5" />
+          <path d={`M 1 ${room.length / 3} Q ${room.width / 2} ${room.length / 3 - 0.5} ${room.width - 1} ${room.length / 3}`} stroke="#0284C7" strokeWidth="0.2" fill="none" />
+          <path d={`M 1 ${(room.length * 2) / 3} Q ${room.width / 2} ${(room.length * 2) / 3 + 0.5} ${room.width - 1} ${(room.length * 2) / 3}`} stroke="#0284C7" strokeWidth="0.2" fill="none" />
+        </g>
+      )}
+
+      {/* Solar Panel Grid */}
+      {isSolarPanels && (
+        <g className="pointer-events-none" opacity="0.7">
+          {Array.from({ length: Math.max(1, Math.floor(room.width / 3)) }).map((_, i) => (
+            <line key={`x-${i}`} x1={(i + 1) * 3} y1="0.5" x2={(i + 1) * 3} y2={room.length - 0.5} stroke="#60A5FA" strokeWidth="0.15" />
+          ))}
+          {Array.from({ length: Math.max(1, Math.floor(room.length / 3)) }).map((_, j) => (
+            <line key={`y-${j}`} x1="0.5" y1={(j + 1) * 3} x2={room.width - 0.5} y2={(j + 1) * 3} stroke="#60A5FA" strokeWidth="0.15" />
+          ))}
+        </g>
+      )}
+
+      {/* Garden / Backyard Grass Detail */}
+      {isGarden && (
+        <g className="pointer-events-none" opacity="0.5">
+          <circle cx={room.width * 0.3} cy={room.length * 0.3} r="0.6" fill="#16A34A" />
+          <circle cx={room.width * 0.7} cy={room.length * 0.6} r="0.8" fill="#16A34A" />
+        </g>
+      )}
+
+      {/* Parking Lines */}
+      {isParking && (
+        <g className="pointer-events-none" opacity="0.6">
+          <line x1={room.width / 2} y1="1" x2={room.width / 2} y2={room.length - 1} stroke="#FFFFFF" strokeWidth="0.3" strokeDasharray="1,1" />
+        </g>
+      )}
+
       {/* Wall thickness representation inner stroke */}
-      <rect 
-        className="room pointer-events-none"
-        x="0.25" y="0.25"
-        width={room.width - 0.5} 
-        height={room.length - 0.5} 
-        fill="none"
-        strokeWidth="0.1"
-      />
+      {!isSwimmingPool && !isSolarPanels && !isGarden && (
+        <rect 
+          className="room pointer-events-none"
+          x="0.25" y="0.25"
+          width={room.width - 0.5} 
+          height={room.length - 0.5} 
+          fill="none"
+          strokeWidth="0.1"
+        />
+      )}
       
       {/* Staircase Steps Representation */}
       {room.category === 'circulation' && (
@@ -140,7 +202,6 @@ export default function RoomElement({ room }: { room: any }) {
               opacity="0.5"
             />
           ))}
-          {/* UP/DOWN arrow based on floor */}
           <polygon 
             points={`${room.width / 2},1 ${room.width / 2 - 1},2.5 ${room.width / 2 + 1},2.5`} 
             fill={getCategoryBorder(room.category)}
@@ -154,11 +215,11 @@ export default function RoomElement({ room }: { room: any }) {
         textAnchor="middle" 
         alignmentBaseline="middle"
         fontSize={Math.min(room.width, room.length) * 0.15}
-        fill="#0F172A"
+        fill={isSolarPanels ? "#FFFFFF" : "#0F172A"}
         fontWeight="bold"
         className="pointer-events-none select-none"
       >
-        {room.name}
+        {isSwimmingPool ? '🌊 ' : isSolarPanels ? '☀️ ' : isGarden ? '🌳 ' : ''}{room.name}
       </text>
       <text 
         x={room.width / 2} 
@@ -166,7 +227,7 @@ export default function RoomElement({ room }: { room: any }) {
         textAnchor="middle" 
         alignmentBaseline="middle"
         fontSize={Math.min(room.width, room.length) * 0.1}
-        fill="#64748b"
+        fill={isSolarPanels ? "#93C5FD" : "#64748b"}
         className="pointer-events-none select-none"
       >
         {Math.round(room.width)}' x {Math.round(room.length)}'

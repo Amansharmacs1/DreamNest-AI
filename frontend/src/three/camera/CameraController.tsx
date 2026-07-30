@@ -60,6 +60,11 @@ export default function CameraController() {
 
   // Adjust camera position when switching modes
   useEffect(() => {
+    // Ensure the camera can see layer 0 (default), 1 (floors/stairs), and 2 (walls)
+    camera.layers.enable(0);
+    camera.layers.enable(1);
+    camera.layers.enable(2);
+    
     if (cameraMode === 'first-person') {
       // Set to eye level (assuming 1 unit = 1 foot, eye level = 5.5 ft)
       camera.position.set(0, 5.5, 0);

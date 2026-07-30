@@ -4,10 +4,10 @@ import type { InteriorTheme } from '@/store/threeStore';
 // Cache for materials to avoid recompiling shaders for every mesh
 const materialCache: Record<string, THREE.Material> = {};
 
-export type MaterialType = 'wall' | 'floor_living' | 'floor_sleeping' | 'floor_service' | 'floor_outdoor' | 'roof' | 'door' | 'glass' | 'grass' | 'concrete' | 'boundary' | 'road' | 'wood' | 'metal';
+export type MaterialType = 'wall' | 'floor_living' | 'floor_sleeping' | 'floor_service' | 'floor_outdoor' | 'roof' | 'door' | 'glass' | 'grass' | 'concrete' | 'boundary' | 'road' | 'wood' | 'metal' | 'pool_water' | 'pool_tile' | 'solar_pv' | 'solar_frame';
 
-export const getMaterial = (type: MaterialType, transparent = false, theme: InteriorTheme = 'modern'): THREE.Material => {
-  const cacheKey = `${type}_${transparent}_${theme}`;
+export const getMaterial = (type: MaterialType, transparent = false, wireframe = false, theme: InteriorTheme = 'modern'): THREE.Material => {
+  const cacheKey = `${type}_${transparent}_${wireframe}_${theme}`;
   
   if (materialCache[cacheKey]) {
     return materialCache[cacheKey];
@@ -21,6 +21,7 @@ export const getMaterial = (type: MaterialType, transparent = false, theme: Inte
     transparent: transparent,
     opacity: transparent ? 0.3 : 1.0,
     side: THREE.DoubleSide,
+    wireframe: wireframe,
   };
 
   switch (type) {
@@ -121,6 +122,40 @@ export const getMaterial = (type: MaterialType, transparent = false, theme: Inte
         color: '#9ca3af', // Metallic gray
         metalness: 0.8,
         roughness: 0.2,
+      });
+      break;
+    case 'pool_water':
+      material = new THREE.MeshPhysicalMaterial({
+        ...baseConfig,
+        color: '#38bdf8',
+        metalness: 0.1,
+        roughness: 0.1,
+        transmission: 0.6,
+        transparent: true,
+        opacity: 0.85,
+      });
+      break;
+    case 'pool_tile':
+      material = new THREE.MeshStandardMaterial({
+        ...baseConfig,
+        color: '#0284c7',
+        roughness: 0.3,
+      });
+      break;
+    case 'solar_pv':
+      material = new THREE.MeshStandardMaterial({
+        ...baseConfig,
+        color: '#1e3a8a',
+        metalness: 0.9,
+        roughness: 0.2,
+      });
+      break;
+    case 'solar_frame':
+      material = new THREE.MeshStandardMaterial({
+        ...baseConfig,
+        color: '#475569',
+        metalness: 0.8,
+        roughness: 0.3,
       });
       break;
     default:

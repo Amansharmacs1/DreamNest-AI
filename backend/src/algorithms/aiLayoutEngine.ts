@@ -13,7 +13,20 @@ function convertToFeet(value: number, unit: string): number {
 
 function legalizeLayout(layout: any) {
   // 1. Grid Snap
-  layout.rooms.forEach((room: any) => {
+  layout.rooms.forEach((room: any, index: number) => {
+    if (!room.id) room.id = `room-${index}-${Date.now()}`;
+    
+    // Map categories if the LLM output something invalid
+    const validCats = ['living', 'sleeping', 'service', 'outdoor', 'circulation'];
+    if (!validCats.includes(room.category)) {
+      if (room.name.toLowerCase().includes('bed')) room.category = 'sleeping';
+      else if (room.name.toLowerCase().includes('bath')) room.category = 'service';
+      else if (room.name.toLowerCase().includes('kitchen')) room.category = 'service';
+      else if (room.name.toLowerCase().includes('stair')) room.category = 'circulation';
+      else if (room.name.toLowerCase().includes('garden') || room.name.toLowerCase().includes('pool')) room.category = 'outdoor';
+      else room.category = 'living';
+    }
+
     room.x = Math.round(room.x);
     room.y = Math.round(room.y);
     room.width = Math.round(room.width);
@@ -114,7 +127,11 @@ export const generateAILayout = async (preferences: HomePreferences): Promise<Ge
   3. No rooms should overlap on the same floor.
   4. If multiple floors exist, you MUST include a room with category 'circulation', name 'Staircase'. This staircase MUST exist on EVERY floor (from floor 0 to ${numFloors - 1}), and it MUST have the EXACT SAME x, y, width, and length on every floor (stack vertically).
   5. Include all requested bedrooms, bathrooms, living rooms, etc.
-  6. If Vastu is required (${preferences.preferences.vastuRequired}), try to put the kitchen in the SE or NW, and the master bedroom in the SW.
+  6. If Vastu is required (${preferences.preferences?.vastuRequired}), try to put the kitchen in the SE or NW, and the master bedroom in the SW.
+  7. OUTDOOR FEATURES:
+     - If Swimming Pool is requested, include a room entry with category 'outdoor', name 'Swimming Pool' on floor 0.
+     - If Solar Panels is requested, include a room entry with category 'outdoor', name 'Solar Panels' on floor ${numFloors - 1} (rooftop).
+     - Include any requested Garden, Backyard, Parking, Outdoor Patio, or Kids Play Area as category 'outdoor' on floor 0.
   `;
 
   const { object } = await generateObject({
@@ -132,11 +149,11 @@ export const generateAILayout = async (preferences: HomePreferences): Promise<Ge
         startY: z.number(),
       }),
       rooms: z.array(z.object({
-        id: z.string(),
+        id: z.string().optional(),
         name: z.string(),
-        category: z.enum(['living', 'sleeping', 'service', 'outdoor', 'circulation']),
-        stairStyle: z.enum(['Straight', 'L Shape', 'U Shape']).optional(),
-        stairDirection: z.enum(['north', 'south', 'east', 'west']).optional(),
+        category: z.string(),
+        stairStyle: z.string().optional(),
+        stairDirection: z.string().optional(),
         floor: z.number(),
         x: z.number(),
         y: z.number(),

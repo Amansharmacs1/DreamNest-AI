@@ -62,6 +62,9 @@ export interface RoomDimensions {
   id: string;
   name: string;
   category: 'living' | 'sleeping' | 'service' | 'outdoor' | 'circulation';
+  floor?: number;
+  stairStyle?: 'Straight' | 'L Shape' | 'U Shape';
+  stairDirection?: 'north' | 'south' | 'east' | 'west';
   x: number;
   y: number;
   width: number;
