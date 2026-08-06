@@ -109,35 +109,52 @@ export default function FloorPlanViewer() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <header className="flex flex-col lg:flex-row items-center justify-between p-4 bg-white border-b shadow-sm z-10 gap-4">
-        <div className="flex items-center gap-4 w-full lg:w-auto">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-            <Home className="w-5 h-5 text-primary" />
-          </Button>
-          <h1 className="text-xl font-bold truncate">Floor Plan Viewer</h1>
+      <header className="flex flex-col md:flex-row items-center justify-between p-4 bg-white border-b shadow-sm z-10 gap-4">
+        <div className="flex items-center justify-between w-full md:w-auto">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <Home className="w-5 h-5 text-primary" />
+            </Button>
+            <h1 className="text-lg md:text-xl font-bold truncate">Floor Plan Viewer</h1>
+          </div>
+          <div className="md:hidden flex gap-2">
+            <Button variant="outline" size="icon" onClick={undo} disabled={history.length === 0} title="Undo">
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={redo} disabled={future.length === 0} title="Redo">
+              <Redo className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
-          <Button variant="outline" size="sm" onClick={undo} disabled={history.length === 0}>
-            <Undo className="w-4 h-4 mr-2" /> Undo
-          </Button>
-          <Button variant="outline" size="sm" onClick={redo} disabled={future.length === 0}>
-            <Redo className="w-4 h-4 mr-2" /> Redo
-          </Button>
+        
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-center md:justify-end">
+          <div className="hidden md:flex gap-2">
+            <Button variant="outline" size="sm" onClick={undo} disabled={history.length === 0}>
+              <Undo className="w-4 h-4 mr-2" /> Undo
+            </Button>
+            <Button variant="outline" size="sm" onClick={redo} disabled={future.length === 0}>
+              <Redo className="w-4 h-4 mr-2" /> Redo
+            </Button>
+          </div>
+          
           <Button variant="outline" size="sm" onClick={reset}>
-            <RefreshCcw className="w-4 h-4 mr-2" /> Reset
+            <RefreshCcw className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Reset</span>
           </Button>
           <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setIsReportOpen(true)}>
-            <Sparkles className="w-4 h-4 mr-2" /> Smart Report
+            <Sparkles className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Smart Report</span>
           </Button>
           <Button variant={viewMode === '3d' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode(v => v === '2d' ? '3d' : '2d')}>
-            <Box className="w-4 h-4 mr-2" /> {viewMode === '2d' ? 'View 3D' : 'View 2D'}
+            <Box className="w-4 h-4 mr-1 md:mr-2" /> {viewMode === '2d' ? 'View 3D' : 'View 2D'}
           </Button>
-          <Button variant="secondary" size="sm" onClick={exportPNG}>
-            <Download className="w-4 h-4 mr-2" /> PNG
-          </Button>
-          <Button size="sm" onClick={exportPDF}>
-            <Download className="w-4 h-4 mr-2" /> PDF
-          </Button>
+          
+          <div className="flex gap-2 w-full sm:w-auto justify-center mt-2 sm:mt-0">
+            <Button variant="secondary" size="sm" onClick={exportPNG} className="flex-1 sm:flex-none">
+              <Download className="w-4 h-4 mr-1 md:mr-2" /> PNG
+            </Button>
+            <Button size="sm" onClick={exportPDF} className="flex-1 sm:flex-none">
+              <Download className="w-4 h-4 mr-1 md:mr-2" /> PDF
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -150,6 +167,21 @@ export default function FloorPlanViewer() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onWheel={handleWheel}
+          onTouchStart={(e) => {
+            if (e.touches.length === 1) {
+              setIsDragging(true);
+              setDragStart({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y });
+            }
+          }}
+          onTouchMove={(e) => {
+            if (isDragging && e.touches.length === 1) {
+              setPan({
+                x: e.touches[0].clientX - dragStart.x,
+                y: e.touches[0].clientY - dragStart.y
+              });
+            }
+          }}
+          onTouchEnd={() => setIsDragging(false)}
         >
           <div 
             className="absolute origin-center transition-transform duration-75"
@@ -191,28 +223,28 @@ export default function FloorPlanViewer() {
           </div>
           
           {/* Controls Overlay */}
-          <div className="absolute bottom-6 right-6 flex flex-col gap-2">
-            <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.min(z + 0.2, 3))}>+</Button>
-            <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))}>-</Button>
-            <Button variant="secondary" size="icon" onClick={() => { setZoom(1); setPan({x:0, y:0}); }}>
+          <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-2 z-10">
+            <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.min(z + 0.2, 3))} className="w-10 h-10 rounded-full shadow-md bg-white">+</Button>
+            <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-full shadow-md bg-white">-</Button>
+            <Button variant="secondary" size="icon" onClick={() => { setZoom(1); setPan({x:0, y:0}); }} className="w-10 h-10 rounded-full shadow-md bg-white">
               <RefreshCcw className="w-4 h-4" />
             </Button>
           </div>
           
           {/* Scale indicator */}
-          <div className="absolute bottom-6 left-6 bg-white px-4 py-2 rounded-md shadow-md text-sm font-medium border">
-            Scale: {Math.round(zoom * 100)}% | 1 unit = 1 {layout.plotDimensions.unit}
+          <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 bg-white/90 backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-md shadow-md text-xs md:text-sm font-medium border z-10">
+            Scale: {Math.round(zoom * 100)}% <span className="hidden sm:inline">| 1 unit = 1 {layout.plotDimensions.unit}</span>
           </div>
 
           {/* Floor Selector */}
           {maxFloor > 0 && (
-            <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white px-2 py-2 rounded-full shadow-lg border flex gap-1 items-center">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-1.5 py-1.5 md:px-2 md:py-2 rounded-full shadow-lg border flex gap-1 items-center z-10">
               {Array.from({ length: maxFloor + 1 }).map((_, i) => (
                 <Button 
                   key={i} 
                   variant={activeFloor === i ? 'default' : 'ghost'} 
                   size="sm"
-                  className="rounded-full px-4"
+                  className="rounded-full px-3 md:px-4 text-xs md:text-sm h-7 md:h-8"
                   onClick={() => setActiveFloor(i)}
                 >
                   Floor {i}

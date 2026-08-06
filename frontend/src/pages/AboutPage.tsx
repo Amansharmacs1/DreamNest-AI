@@ -14,8 +14,8 @@ export default function AboutPage() {
         </div>
         <div>
           <Link to="/">
-            <Button variant="ghost" className="flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" /> Back to Home
+            <Button variant="ghost" className="flex items-center gap-1 md:gap-2 px-2 md:px-4">
+              <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Home</span><span className="sm:hidden">Back</span>
             </Button>
           </Link>
         </div>

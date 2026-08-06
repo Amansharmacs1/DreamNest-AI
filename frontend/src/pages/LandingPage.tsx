@@ -54,16 +54,16 @@ export default function LandingPage() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl text-center z-10"
         >
-          <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-main mb-6 leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight text-main mb-6 leading-tight">
             Design your dream home <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">in minutes.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
             Transform your ideas into precise 2D floor plans instantly. Just tell us your plot dimensions and preferences, and let our intelligent engine do the rest.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/wizard">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            <Link to="/wizard" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 shadow-xl shadow-primary/25 rounded-full transition-all hover:scale-105">
                 Start Designing
               </Button>
