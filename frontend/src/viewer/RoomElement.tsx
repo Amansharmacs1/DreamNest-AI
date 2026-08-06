@@ -187,6 +187,48 @@ export default function RoomElement({ room }: { room: any }) {
         />
       )}
       
+      {/* Windows Overlay */}
+      {room.windows?.map((win: any) => {
+        let x = 0, y = 0, w = 0, h = 0;
+        const thickness = 0.8;
+        if (win.wall === 'top') { x = win.offset - win.width/2; y = -thickness/2; w = win.width; h = thickness; }
+        if (win.wall === 'bottom') { x = win.offset - win.width/2; y = room.length - thickness/2; w = win.width; h = thickness; }
+        if (win.wall === 'left') { x = -thickness/2; y = win.offset - win.width/2; w = thickness; h = win.width; }
+        if (win.wall === 'right') { x = room.width - thickness/2; y = win.offset - win.width/2; w = thickness; h = win.width; }
+        return <rect key={win.id} x={x} y={y} width={w} height={h} fill="#BAE6FD" stroke="#0284C7" strokeWidth="0.2" className="pointer-events-none" />;
+      })}
+
+      {/* Doors Overlay */}
+      {room.doors?.map((door: any) => {
+        let x = 0, y = 0, w = 0, h = 0;
+        let arcPath = '';
+        const thickness = 0.6; // Slightly thicker than the 0.5 stroke to hide it completely
+        if (door.wall === 'top') { 
+          x = door.offset - door.width/2; y = -thickness/2; w = door.width; h = thickness;
+          arcPath = `M ${x},0 A ${door.width} ${door.width} 0 0 1 ${x + door.width},${-door.width} L ${x + door.width},0`;
+        }
+        if (door.wall === 'bottom') { 
+          x = door.offset - door.width/2; y = room.length - thickness/2; w = door.width; h = thickness;
+          arcPath = `M ${x},${room.length} A ${door.width} ${door.width} 0 0 0 ${x + door.width},${room.length + door.width} L ${x + door.width},${room.length}`;
+        }
+        if (door.wall === 'left') { 
+          x = -thickness/2; y = door.offset - door.width/2; w = thickness; h = door.width;
+          arcPath = `M 0,${y} A ${door.width} ${door.width} 0 0 0 ${-door.width},${y + door.width} L 0,${y + door.width}`;
+        }
+        if (door.wall === 'right') { 
+          x = room.width - thickness/2; y = door.offset - door.width/2; w = thickness; h = door.width;
+          arcPath = `M ${room.width},${y} A ${door.width} ${door.width} 0 0 1 ${room.width + door.width},${y + door.width} L ${room.width},${y + door.width}`;
+        }
+        
+        return (
+          <g key={door.id} className="pointer-events-none">
+            <rect x={x} y={y} width={w} height={h} fill="#FFFFFF" />
+            <path d={arcPath} fill="none" stroke="#64748b" strokeWidth="0.3" strokeDasharray="0.5,0.5" />
+          </g>
+        );
+      })}
+
+      
       {/* Staircase Steps Representation */}
       {room.category === 'circulation' && (
         <g className="pointer-events-none">

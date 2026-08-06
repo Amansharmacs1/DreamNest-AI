@@ -232,6 +232,63 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
     }
   }
 
+  // Pass 2: Add Doors and Windows
+  // Calculate bounding box for each floor to determine exterior walls
+  const floorBounds = new Map<number, { minX: number, minY: number, maxX: number, maxY: number }>();
+  for (const r of rooms) {
+    if (!floorBounds.has(r.floor)) {
+      floorBounds.set(r.floor, { minX: r.x, minY: r.y, maxX: r.x + r.width, maxY: r.y + r.length });
+    } else {
+      const b = floorBounds.get(r.floor)!;
+      b.minX = Math.min(b.minX, r.x);
+      b.minY = Math.min(b.minY, r.y);
+      b.maxX = Math.max(b.maxX, r.x + r.width);
+      b.maxY = Math.max(b.maxY, r.y + r.length);
+    }
+  }
+
+  for (const r of rooms) {
+    if (r.category === 'outdoor') continue; // Outdoors like garden don't get traditional doors/windows
+
+    r.doors = [];
+    r.windows = [];
+    const b = floorBounds.get(r.floor)!;
+    
+    // Windows on exterior walls
+    const windowWidth = 4;
+    const windowHeight = 4;
+    if (r.x <= b.minX + 0.1) r.windows.push({ id: generateId(), type: 'window', wall: 'left', offset: r.length / 2, width: windowWidth, height: windowHeight });
+    else if (r.x + r.width >= b.maxX - 0.1) r.windows.push({ id: generateId(), type: 'window', wall: 'right', offset: r.length / 2, width: windowWidth, height: windowHeight });
+    else if (r.y <= b.minY + 0.1) r.windows.push({ id: generateId(), type: 'window', wall: 'top', offset: r.width / 2, width: windowWidth, height: windowHeight });
+    else if (r.y + r.length >= b.maxY - 0.1) r.windows.push({ id: generateId(), type: 'window', wall: 'bottom', offset: r.width / 2, width: windowWidth, height: windowHeight });
+
+    // One Door per room facing the center of the floor bounding box
+    const cx = (b.minX + b.maxX) / 2;
+    const cy = (b.minY + b.maxY) / 2;
+    
+    const distTop = Math.hypot((r.x + r.width / 2) - cx, r.y - cy);
+    const distBottom = Math.hypot((r.x + r.width / 2) - cx, (r.y + r.length) - cy);
+    const distLeft = Math.hypot(r.x - cx, (r.y + r.length / 2) - cy);
+    const distRight = Math.hypot((r.x + r.width) - cx, (r.y + r.length / 2) - cy);
+
+    let doorWall: 'top' | 'bottom' | 'left' | 'right' = 'top';
+    let doorOffset = r.width / 2;
+    let minDist = distTop;
+
+    if (distBottom < minDist) { minDist = distBottom; doorWall = 'bottom'; doorOffset = r.width / 2; }
+    if (distLeft < minDist) { minDist = distLeft; doorWall = 'left'; doorOffset = r.length / 2; }
+    if (distRight < minDist) { minDist = distRight; doorWall = 'right'; doorOffset = r.length / 2; }
+
+    r.doors.push({
+      id: generateId(),
+      type: 'door',
+      wall: doorWall,
+      offset: doorOffset,
+      width: 3,
+      height: 7
+    });
+  }
+
   return {
     plotDimensions: {
       width: plotWidth,

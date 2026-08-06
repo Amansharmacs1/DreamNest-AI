@@ -46,6 +46,110 @@ export default function RoomGenerator({ room }: { room: any }) {
   // Elevate room based on its floor
   const floorY = (room.floor || 0) * WALL_HEIGHT;
 
+  const glassMat = getMaterial('glass', true, wireframe, theme);
+  const woodMat = getMaterial('wood', false, wireframe, theme);
+
+  const renderWall = (wallType: 'top' | 'bottom' | 'left' | 'right', wallLength: number) => {
+    const openings = [
+      ...(room.doors?.filter((d: any) => d.wall === wallType) || []),
+      ...(room.windows?.filter((w: any) => w.wall === wallType) || [])
+    ];
+
+    if (openings.length === 0) {
+      return (
+        <mesh castShadow receiveShadow material={wallMat} layers={2}>
+          <boxGeometry args={[wallLength + WALL_THICKNESS, WALL_HEIGHT, WALL_THICKNESS]} />
+        </mesh>
+      );
+    }
+
+    const segments: any[] = [];
+    let current = 0;
+    const sorted = [...openings].sort((a, b) => a.offset - b.offset);
+
+    sorted.forEach((op, idx) => {
+      // Clamp startX and endX to avoid going outside wall bounds
+      const startX = Math.max(current, op.offset - op.width / 2);
+      const endX = Math.min(wallLength, op.offset + op.width / 2);
+      const actualWidth = endX - startX;
+      if (actualWidth <= 0) return;
+
+      // 1. Wall segment before the opening
+      if (startX > current) {
+        let segLen = startX - current;
+        // Extend first segment slightly for corners
+        if (current === 0) segLen += WALL_THICKNESS / 2;
+        const cx = current + (startX - current) / 2 - wallLength / 2;
+        
+        segments.push(
+          <mesh key={`seg-${idx}`} castShadow receiveShadow position={[cx, 0, 0]} material={wallMat} layers={2}>
+            <boxGeometry args={[segLen, WALL_HEIGHT, WALL_THICKNESS]} />
+          </mesh>
+        );
+      }
+
+      const cx = startX + actualWidth / 2 - wallLength / 2;
+
+      // 2. Lintel
+      const lintelHeight = WALL_HEIGHT - op.height;
+      if (lintelHeight > 0) {
+        const cy = (WALL_HEIGHT + op.height) / 2 - WALL_HEIGHT / 2;
+        segments.push(
+          <mesh key={`lintel-${idx}`} castShadow receiveShadow position={[cx, cy, 0]} material={wallMat} layers={2}>
+            <boxGeometry args={[actualWidth, lintelHeight, WALL_THICKNESS]} />
+          </mesh>
+        );
+      }
+
+      // 3. Sill & Window Glass
+      if (op.type === 'window') {
+        const sillHeight = 3;
+        const cy = sillHeight / 2 - WALL_HEIGHT / 2;
+        segments.push(
+          <mesh key={`sill-${idx}`} castShadow receiveShadow position={[cx, cy, 0]} material={wallMat} layers={2}>
+            <boxGeometry args={[actualWidth, sillHeight, WALL_THICKNESS]} />
+          </mesh>
+        );
+        
+        const glassHeight = op.height - sillHeight;
+        if (glassHeight > 0) {
+          const glassCy = sillHeight + glassHeight / 2 - WALL_HEIGHT / 2;
+          segments.push(
+            <mesh key={`glass-${idx}`} castShadow receiveShadow position={[cx, glassCy, 0]} material={glassMat} layers={2}>
+              <boxGeometry args={[actualWidth, glassHeight, WALL_THICKNESS * 0.3]} />
+            </mesh>
+          );
+        }
+      }
+
+      // 4. Door Frame
+      if (op.type === 'door') {
+        const cy = op.height / 2 - WALL_HEIGHT / 2;
+        segments.push(
+          <mesh key={`door-${idx}`} castShadow receiveShadow position={[cx, cy, 0]} material={woodMat} layers={2}>
+            <boxGeometry args={[actualWidth, op.height, WALL_THICKNESS * 0.4]} />
+          </mesh>
+        );
+      }
+
+      current = endX;
+    });
+
+    if (current < wallLength) {
+      let segLen = wallLength - current;
+      // Extend last segment slightly for corners
+      if (current < wallLength) segLen += WALL_THICKNESS / 2;
+      const cx = current + (wallLength - current) / 2 - wallLength / 2;
+      segments.push(
+        <mesh key="final-seg" castShadow receiveShadow position={[cx, 0, 0]} material={wallMat} layers={2}>
+          <boxGeometry args={[segLen, WALL_HEIGHT, WALL_THICKNESS]} />
+        </mesh>
+      );
+    }
+
+    return <>{segments}</>;
+  };
+
   // Custom 3D rendering for Swimming Pool
   if (isSwimmingPool) {
     return (
@@ -159,24 +263,24 @@ export default function RoomGenerator({ room }: { room: any }) {
       {/* Walls */}
       <group position={[0, WALL_HEIGHT / 2, 0]}>
         {/* North Wall (Top in 2D) */}
-        <mesh castShadow receiveShadow position={[0, 0, -room.length / 2]} material={wallMat} layers={2}>
-          <boxGeometry args={[room.width + WALL_THICKNESS, WALL_HEIGHT, WALL_THICKNESS]} />
-        </mesh>
+        <group position={[0, 0, -room.length / 2]}>
+          {renderWall('top', room.width)}
+        </group>
         
         {/* South Wall (Bottom in 2D) */}
-        <mesh castShadow receiveShadow position={[0, 0, room.length / 2]} material={wallMat} layers={2}>
-          <boxGeometry args={[room.width + WALL_THICKNESS, WALL_HEIGHT, WALL_THICKNESS]} />
-        </mesh>
+        <group position={[0, 0, room.length / 2]}>
+          {renderWall('bottom', room.width)}
+        </group>
 
         {/* East Wall (Right in 2D) */}
-        <mesh castShadow receiveShadow position={[room.width / 2, 0, 0]} material={wallMat} layers={2}>
-          <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, room.length - WALL_THICKNESS]} />
-        </mesh>
+        <group position={[room.width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          {renderWall('right', room.length)}
+        </group>
 
         {/* West Wall (Left in 2D) */}
-        <mesh castShadow receiveShadow position={[-room.width / 2, 0, 0]} material={wallMat} layers={2}>
-          <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, room.length - WALL_THICKNESS]} />
-        </mesh>
+        <group position={[-room.width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          {renderWall('left', room.length)}
+        </group>
       </group>
 
       {/* Labels */}

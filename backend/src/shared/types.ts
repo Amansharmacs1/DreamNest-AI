@@ -68,6 +68,15 @@ export interface HomePreferences {
   preferences: OtherPreferences;
 }
 
+export interface WallOpening {
+  id: string;
+  type: 'door' | 'window';
+  wall: 'top' | 'bottom' | 'left' | 'right';
+  offset: number;
+  width: number;
+  height: number;
+}
+
 export interface RoomDimensions {
   id: string;
   name: string;
@@ -79,6 +88,8 @@ export interface RoomDimensions {
   y: number;
   width: number;
   length: number;
+  doors?: WallOpening[];
+  windows?: WallOpening[];
 }
 
 export interface GeneratedLayout {
