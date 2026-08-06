@@ -7,6 +7,7 @@ import HouseGenerator from './generators/HouseGenerator';
 import { useThreeStore } from '@/store/threeStore';
 import { useWizardStore } from '@/store/wizardStore';
 import { calculateSunPosition } from './utils/sunUtils';
+import GLTFExporterComponent from './helpers/GLTFExporterComponent';
 
 export default function SceneEngine() {
   const timeOfDay = useThreeStore((state) => state.timeOfDay);
@@ -46,6 +47,8 @@ export default function SceneEngine() {
           
           {/* Ambient environment reflections */}
           <Environment preset={timeOfDay === 'night' ? 'night' : 'city'} />
+          
+          <GLTFExporterComponent />
         </Suspense>
       </Canvas>
       

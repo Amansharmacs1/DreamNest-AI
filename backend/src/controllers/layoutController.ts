@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { HomePreferences } from '../shared/types';
 import { generateDeterministicLayout } from '../algorithms/layoutEngine';
 import { generateAILayout } from '../algorithms/aiLayoutEngine';
+import { generateInteriorDesign } from '../services/ai/aiInteriorDesigner';
 
 export const generateLayout = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -23,6 +24,15 @@ export const generateLayout = async (req: Request, res: Response): Promise<void>
       console.warn('AI Layout generation failed, falling back to deterministic layout.', aiError);
       // Fallback to deterministic engine
       layout = generateDeterministicLayout(preferences);
+    }
+
+    // Step 2: Generate Interior Design using AI
+    try {
+      console.log('Attempting AI Interior Design generation...');
+      layout = await generateInteriorDesign(layout, preferences);
+      console.log('AI Interior Design generation successful.');
+    } catch (aiInteriorError) {
+      console.warn('AI Interior Design generation failed. Returning layout without interior details.', aiInteriorError);
     }
 
     // TODO: In phase 2, we would save this to the DB here.

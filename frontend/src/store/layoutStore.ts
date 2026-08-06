@@ -9,6 +9,12 @@ interface Room {
   y: number;
   width: number;
   length: number;
+  furniture?: any[];
+  lighting?: any[];
+  decorations?: any[];
+  materials?: { floor: string; wall: string };
+  designNotes?: string;
+  costEstimate?: { furniture: number; materials: number; decorations: number; total: number; currency: string };
 }
 
 export interface LayoutState {
@@ -19,7 +25,9 @@ export interface LayoutState {
   } | null;
   history: any[]; // For undo
   future: any[]; // For redo
+  selectedRoomId: string | null;
   setLayout: (layout: any) => void;
+  setSelectedRoom: (id: string | null) => void;
   updateRoom: (id: string, updates: Partial<Room>) => void;
   undo: () => void;
   redo: () => void;
@@ -30,7 +38,9 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   layout: null,
   history: [],
   future: [],
-  setLayout: (layout) => set({ layout, history: [], future: [] }),
+  selectedRoomId: null,
+  setLayout: (layout) => set({ layout, history: [], future: [], selectedRoomId: null }),
+  setSelectedRoom: (id) => set({ selectedRoomId: id }),
   updateRoom: (id, updates) => set((state) => {
     if (!state.layout) return state;
     

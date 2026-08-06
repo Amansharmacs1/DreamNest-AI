@@ -3,9 +3,12 @@ import { useLayoutStore } from '@/store/layoutStore';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCcw, Undo, Redo, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useThreeStore } from '@/store/threeStore';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import RoomElement from './RoomElement';
+import RoomInspector from './RoomInspector';
+import CustomizationPanel from './CustomizationPanel';
 import SceneEngine from '../three/SceneEngine';
 import ControlPanel from '../three/ui/ControlPanel';
 import Minimap from '../three/ui/Minimap';
@@ -15,6 +18,7 @@ import SmartReportModal from '../components/ai/SmartReportModal';
 
 export default function FloorPlanViewer() {
   const { layout, undo, redo, history, future, reset } = useLayoutStore();
+  const triggerExportGLTF = useThreeStore((state) => state.triggerExportGLTF);
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
   
@@ -151,12 +155,19 @@ export default function FloorPlanViewer() {
             <Button variant="secondary" size="sm" onClick={exportPNG} className="flex-1 sm:flex-none">
               <Download className="w-4 h-4 mr-1 md:mr-2" /> PNG
             </Button>
-            <Button size="sm" onClick={exportPDF} className="flex-1 sm:flex-none">
+            <Button variant="secondary" size="sm" onClick={exportPDF} className="flex-1 sm:flex-none">
               <Download className="w-4 h-4 mr-1 md:mr-2" /> PDF
             </Button>
+            {viewMode === '3d' && (
+              <Button size="sm" onClick={triggerExportGLTF} className="flex-1 sm:flex-none">
+                <Download className="w-4 h-4 mr-1 md:mr-2" /> GLTF
+              </Button>
+            )}
           </div>
         </div>
       </header>
+
+      <RoomInspector />
 
       {viewMode === '2d' ? (
         <main 
@@ -259,6 +270,7 @@ export default function FloorPlanViewer() {
           <ControlPanel />
           <Minimap />
           <FirstPersonHUD />
+          <CustomizationPanel />
         </main>
       )}
       <SmartReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />

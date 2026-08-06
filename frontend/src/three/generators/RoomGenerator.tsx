@@ -1,7 +1,10 @@
 import { getMaterial, type MaterialType } from '../materials/MaterialFactory';
 import * as THREE from 'three';
 import { useThreeStore } from '@/store/threeStore';
+import { useLayoutStore } from '@/store/layoutStore';
 import { Html } from '@react-three/drei';
+import FurnitureGenerator from './FurnitureGenerator';
+import RoomLighting from '../lights/RoomLighting';
 
 const WALL_HEIGHT = 10;
 const WALL_THICKNESS = 0.5;
@@ -12,6 +15,7 @@ export default function RoomGenerator({ room }: { room: any }) {
   const transparentWalls = useThreeStore((state) => state.transparentWalls);
   const wireframe = useThreeStore((state) => state.wireframe);
   const theme = useThreeStore((state) => state.theme);
+  const setSelectedRoom = useLayoutStore((state) => state.setSelectedRoom);
 
   const roomNameLower = (room.name || '').toLowerCase();
   const isSwimmingPool = roomNameLower.includes('pool');
@@ -153,7 +157,10 @@ export default function RoomGenerator({ room }: { room: any }) {
   // Custom 3D rendering for Swimming Pool
   if (isSwimmingPool) {
     return (
-      <group position={[centerX, floorY, centerZ]}>
+      <group 
+        position={[centerX, floorY, centerZ]}
+        onClick={(e) => { e.stopPropagation(); setSelectedRoom(room.id); }}
+      >
         {/* Pool Coping Rim */}
         <mesh receiveShadow position={[0, 0.1, 0]} material={poolTileMat}>
           <boxGeometry args={[room.width, 0.2, room.length]} />
@@ -182,7 +189,10 @@ export default function RoomGenerator({ room }: { room: any }) {
     const panelsZ = Math.max(1, Math.floor(room.length / 5));
     
     return (
-      <group position={[centerX, floorY, centerZ]}>
+      <group 
+        position={[centerX, floorY, centerZ]}
+        onClick={(e) => { e.stopPropagation(); setSelectedRoom(room.id); }}
+      >
         {/* Mounting Base */}
         <mesh receiveShadow position={[0, 0.2, 0]} material={solarFrameMat}>
           <boxGeometry args={[room.width, 0.2, room.length]} />
@@ -223,7 +233,10 @@ export default function RoomGenerator({ room }: { room: any }) {
   // Custom 3D rendering for open Outdoor areas (Garden, Backyard, Parking, Patio)
   if (room.category === 'outdoor' && !roomNameLower.includes('balcony')) {
     return (
-      <group position={[centerX, floorY, centerZ]}>
+      <group 
+        position={[centerX, floorY, centerZ]}
+        onClick={(e) => { e.stopPropagation(); setSelectedRoom(room.id); }}
+      >
         <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} material={floorMat}>
           <planeGeometry args={[room.width, room.length]} />
         </mesh>
@@ -247,7 +260,10 @@ export default function RoomGenerator({ room }: { room: any }) {
 
   // Standard Indoor Rooms & Circulation
   return (
-    <group position={[centerX, floorY, centerZ]}>
+    <group 
+      position={[centerX, floorY, centerZ]}
+      onClick={(e) => { e.stopPropagation(); setSelectedRoom(room.id); }}
+    >
       {/* Floor */}
       <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} material={floorMat} layers={1}>
         <planeGeometry args={[room.width, room.length]} />
@@ -294,6 +310,14 @@ export default function RoomGenerator({ room }: { room: any }) {
           </div>
         </Html>
       )}
+
+      {/* Interior Furniture & Lighting */}
+      <group position={[-room.width / 2, 0, -room.length / 2]}>
+        {room.furniture?.map((furn: any) => (
+          <FurnitureGenerator key={furn.id} furniture={furn} />
+        ))}
+        {room.lighting && <RoomLighting lights={room.lighting} />}
+      </group>
     </group>
   );
 }

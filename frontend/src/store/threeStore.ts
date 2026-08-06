@@ -13,6 +13,7 @@ export interface ThreeState {
   timeOfDay: TimeOfDay;
   cameraMode: CameraMode;
   theme: InteriorTheme;
+  exportTrigger: number;
   
   // Toggles
   toggleRoof: () => void;
@@ -25,6 +26,7 @@ export interface ThreeState {
   setTimeOfDay: (time: TimeOfDay) => void;
   setCameraMode: (mode: CameraMode) => void;
   setTheme: (theme: InteriorTheme) => void;
+  triggerExportGLTF: () => void;
 }
 
 export const useThreeStore = create<ThreeState>((set) => ({
@@ -36,6 +38,7 @@ export const useThreeStore = create<ThreeState>((set) => ({
   timeOfDay: 'afternoon',
   cameraMode: 'orbit',
   theme: 'modern',
+  exportTrigger: 0,
   
   toggleRoof: () => set((state) => ({ showRoof: !state.showRoof })),
   toggleLabels: () => set((state) => ({ showLabels: !state.showLabels })),
@@ -46,4 +49,5 @@ export const useThreeStore = create<ThreeState>((set) => ({
   setTimeOfDay: (timeOfDay) => set({ timeOfDay }),
   setCameraMode: (cameraMode) => set({ cameraMode }),
   setTheme: (theme) => set({ theme }),
+  triggerExportGLTF: () => set((state) => ({ exportTrigger: state.exportTrigger + 1 })),
 }));

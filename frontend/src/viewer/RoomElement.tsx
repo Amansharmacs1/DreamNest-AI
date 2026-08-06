@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 
 export default function RoomElement({ room }: { room: any }) {
-  const { updateRoom, layout } = useLayoutStore();
+  const { updateRoom, layout, selectedRoomId, setSelectedRoom } = useLayoutStore();
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ mouseX: 0, mouseY: 0, roomX: 0, roomY: 0, roomWidth: 0, roomLength: 0 });
@@ -125,8 +125,12 @@ export default function RoomElement({ room }: { room: any }) {
 
   return (
     <g 
-      className="room cursor-move group select-none"
+      className={`room cursor-pointer group select-none ${selectedRoomId === room.id ? 'opacity-100' : 'opacity-90'}`}
       onMouseDown={handleMouseDown}
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedRoom(room.id);
+      }}
       transform={`translate(${room.x}, ${room.y})`}
     >
       <rect 

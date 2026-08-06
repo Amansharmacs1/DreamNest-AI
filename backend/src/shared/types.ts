@@ -68,6 +68,52 @@ export interface HomePreferences {
   preferences: OtherPreferences;
 }
 
+export interface Furniture {
+  id: string;
+  type: string;
+  x: number;
+  y: number;
+  z: number;
+  rotation: number;
+  width: number;
+  length: number;
+  height: number;
+  style: string;
+  color: string;
+}
+
+export interface LightFixture {
+  id: string;
+  type: 'ceiling' | 'wall' | 'table' | 'pendant';
+  x: number;
+  y: number;
+  z: number;
+  intensity: number;
+  color: string;
+}
+
+export interface Decoration {
+  id: string;
+  type: 'plant' | 'painting' | 'mirror' | 'carpet' | 'shelf' | 'clock' | string;
+  x: number;
+  y: number;
+  z: number;
+  scale: number;
+}
+
+export interface RoomMaterials {
+  floor: string;
+  wall: string;
+}
+
+export interface CostEstimate {
+  furniture: number;
+  materials: number;
+  decorations: number;
+  total: number;
+  currency: string;
+}
+
 export interface WallOpening {
   id: string;
   type: 'door' | 'window';
@@ -90,6 +136,12 @@ export interface RoomDimensions {
   length: number;
   doors?: WallOpening[];
   windows?: WallOpening[];
+  furniture?: Furniture[];
+  lighting?: LightFixture[];
+  decorations?: Decoration[];
+  materials?: RoomMaterials;
+  designNotes?: string;
+  costEstimate?: CostEstimate;
 }
 
 export interface GeneratedLayout {
