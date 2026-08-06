@@ -41,10 +41,50 @@ export default function FloorPlanViewer() {
     );
   }
 
+  const getCanvasFromSVG = (): Promise<HTMLCanvasElement> => {
+    return new Promise((resolve, reject) => {
+      if (!svgRef.current) return reject(new Error('No SVG found'));
+      
+      const svgClone = svgRef.current.cloneNode(true) as SVGSVGElement;
+      const widthPx = layout.plotDimensions.width * 10;
+      const heightPx = layout.plotDimensions.length * 10;
+      
+      svgClone.setAttribute('width', `${widthPx}px`);
+      svgClone.setAttribute('height', `${heightPx}px`);
+      
+      // Inject some base styles that tailwind would normally provide to ensure rendering looks correct
+      const style = document.createElement('style');
+      style.textContent = `
+        text { font-family: sans-serif; }
+      `;
+      svgClone.insertBefore(style, svgClone.firstChild);
+      
+      const svgData = new XMLSerializer().serializeToString(svgClone);
+      const canvas = document.createElement('canvas');
+      
+      // High resolution scale
+      const scale = 3; 
+      canvas.width = widthPx * scale;
+      canvas.height = heightPx * scale;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('No canvas context'));
+      
+      const img = new Image();
+      img.onload = () => {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas);
+      };
+      img.onerror = (e) => reject(e);
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    });
+  };
+
   const exportPDF = async () => {
-    if (!svgRef.current) return;
     try {
-      const canvas = await html2canvas(svgRef.current.parentElement as HTMLElement, { scale: 2, useCORS: true, logging: false });
+      const canvas = await getCanvasFromSVG();
       const imgData = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
@@ -59,21 +99,21 @@ export default function FloorPlanViewer() {
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save('DreamNest-FloorPlan.pdf');
     } catch (e) {
-      console.error('Export failed', e);
-      alert('Failed to export PDF. Please try again.');
+      console.error('Export PDF failed', e);
+      alert('Failed to export PDF.');
     }
   };
 
   const exportPNG = async () => {
-    if (!svgRef.current) return;
     try {
-      const canvas = await html2canvas(svgRef.current.parentElement as HTMLElement);
+      const canvas = await getCanvasFromSVG();
       const link = document.createElement('a');
       link.download = 'DreamNest-FloorPlan.png';
-      link.href = canvas.toDataURL();
+      link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (e) {
-      console.error('Export failed', e);
+      console.error('Export PNG failed', e);
+      alert('Failed to export PNG.');
     }
   };
 
