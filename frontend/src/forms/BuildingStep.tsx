@@ -30,7 +30,7 @@ export function BuildingStep({ onNext }: { onNext: () => void }) {
       
       <div className="space-y-2">
         <Label>Number of Floors</Label>
-        <Input type="number" {...register('numberOfFloors', { valueAsNumber: true })} />
+        <Input type="number" min="1" max="5" {...register('numberOfFloors', { valueAsNumber: true })} />
         {errors.numberOfFloors && <span className="text-red-500 text-sm">{errors.numberOfFloors.message}</span>}
       </div>
       

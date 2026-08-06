@@ -35,12 +35,12 @@ export function PlotStep({ onNext }: { onNext: () => void }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Plot Width</Label>
-          <Input type="number" {...register('width', { valueAsNumber: true })} />
+          <Input type="number" min="10" {...register('width', { valueAsNumber: true })} />
           {errors.width && <span className="text-red-500 text-sm">{errors.width.message}</span>}
         </div>
         <div className="space-y-2">
           <Label>Plot Length</Label>
-          <Input type="number" {...register('length', { valueAsNumber: true })} />
+          <Input type="number" min="10" {...register('length', { valueAsNumber: true })} />
           {errors.length && <span className="text-red-500 text-sm">{errors.length.message}</span>}
         </div>
       </div>

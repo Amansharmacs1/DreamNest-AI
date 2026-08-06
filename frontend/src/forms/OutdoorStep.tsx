@@ -48,7 +48,7 @@ export function OutdoorStep({ onNext }: { onNext: () => void }) {
         {parkingEnabled && (
           <div className="space-y-2 pl-6">
             <Label>Number of Cars</Label>
-            <Input type="number" {...register('numberOfCars', { valueAsNumber: true })} className="max-w-[200px]" />
+            <Input type="number" min="0" {...register('numberOfCars', { valueAsNumber: true })} className="max-w-[200px]" />
           </div>
         )}
       </div>

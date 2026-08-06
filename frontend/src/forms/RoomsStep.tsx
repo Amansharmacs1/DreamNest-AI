@@ -44,7 +44,7 @@ export function RoomsStep({ onNext }: { onNext: () => void }) {
         {fields.map((field) => (
           <div key={field} className="space-y-2">
             <Label className="capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}</Label>
-            <Input type="number" {...register(field as keyof FormData, { valueAsNumber: true })} />
+            <Input type="number" min="0" {...register(field as keyof FormData, { valueAsNumber: true })} />
           </div>
         ))}
       </div>
