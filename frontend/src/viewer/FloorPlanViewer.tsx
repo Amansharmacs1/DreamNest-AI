@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Download, RefreshCcw, Undo, Redo, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useThreeStore } from '@/store/threeStore';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import RoomElement from './RoomElement';
 import RoomInspector from './RoomInspector';
