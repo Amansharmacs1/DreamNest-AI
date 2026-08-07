@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AnalysisResult } from '../types';
+import type { AnalysisResult } from '../types';
 
 export type HeatmapType = 'none' | 'sunlight' | 'ventilation' | 'energy' | 'accessibility';
 

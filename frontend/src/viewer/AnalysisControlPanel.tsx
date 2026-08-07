@@ -1,8 +1,7 @@
-import { useAnalysisStore, HeatmapType } from '@/store/analysisStore';
+import { useAnalysisStore, type HeatmapType } from '@/store/analysisStore';
 import { useLayoutStore } from '@/store/layoutStore';
 import { analyzeLayout } from '@/services/analysisSimulation';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { Sun, Wind, Activity, Zap, Box, X, Play, Wand2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import DesignComparisonOverlay from './DesignComparisonOverlay';
@@ -24,13 +23,13 @@ export default function AnalysisControlPanel() {
 
   useEffect(() => {
     if (isAnalysisModeActive && layout) {
-      const result = analyzeLayout(layout);
+      const result = analyzeLayout(layout as any);
       setAnalysisResult(result);
     }
   }, [isAnalysisModeActive, layout, setAnalysisResult]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isPlaying) {
       interval = setInterval(() => {
         setEnvironment({ timeOfDayMinutes: (useAnalysisStore.getState().timeOfDayMinutes + 15) % 1440 });
@@ -57,7 +56,7 @@ export default function AnalysisControlPanel() {
     return `${displayH}:${m.toString().padStart(2, '0')} ${ampm}`;
   };
 
-  const heatmaps: { id: HeatmapType; label: string; icon: React.ElementType; color: string }[] = [
+  const heatmaps: { id: HeatmapType; label: string; icon: any; color: string }[] = [
     { id: 'sunlight', label: 'Sunlight', icon: Sun, color: 'text-amber-500' },
     { id: 'ventilation', label: 'Ventilation', icon: Wind, color: 'text-cyan-500' },
     { id: 'energy', label: 'Energy', icon: Zap, color: 'text-green-500' },
@@ -87,12 +86,13 @@ export default function AnalysisControlPanel() {
               <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setIsPlaying(!isPlaying)}>
                 {isPlaying ? <X className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </Button>
-              <Slider 
-                value={[timeOfDayMinutes]} 
+              <input 
+                type="range"
+                value={timeOfDayMinutes} 
                 min={0} 
                 max={1439} 
                 step={15} 
-                onValueChange={([val]) => setEnvironment({ timeOfDayMinutes: val })}
+                onChange={(e) => setEnvironment({ timeOfDayMinutes: Number(e.target.value) })}
                 className="flex-1"
               />
             </div>
@@ -107,7 +107,7 @@ export default function AnalysisControlPanel() {
                 return (
                   <Button
                     key={hm.id}
-                    variant={isActive ? 'default' : 'outline'}
+                    variant={(isActive ? 'default' : 'outline') as any}
                     size="sm"
                     className={`justify-start text-xs ${isActive ? '' : 'hover:bg-gray-100'}`}
                     onClick={() => setActiveHeatmap(hm.id)}

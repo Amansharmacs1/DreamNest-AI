@@ -1,7 +1,7 @@
-import { GeneratedLayout, AnalysisResult, RoomDimensions } from '../types';
+import type { GeneratedLayout, AnalysisResult } from '../types';
 
 // Simple helper to calculate sun position (azimuth and altitude)
-export function getSunPosition(date: Date, latitude: number, longitude: number, timeOfDayMinutes: number) {
+export function getSunPosition(date: Date, latitude: number, _longitude: number, timeOfDayMinutes: number) {
   // This is a simplified calculation for simulation purposes.
   // Real solar calculations require complex astronomy algorithms (e.g., NOAA solar calculator).
   

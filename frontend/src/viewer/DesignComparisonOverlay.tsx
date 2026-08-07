@@ -3,7 +3,7 @@ import { useLayoutStore } from '@/store/layoutStore';
 import { useAIStore } from '@/store/aiStore';
 import { Button } from '@/components/ui/button';
 import { Loader2, Wand2, Check, X, ArrowRight, Activity, Info } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { analyzeLayout } from '@/services/analysisSimulation';
 
 export default function DesignComparisonOverlay({ onClose }: { onClose: () => void }) {
@@ -47,8 +47,8 @@ export default function DesignComparisonOverlay({ onClose }: { onClose: () => vo
     onClose();
   };
 
-  const currentAnalysis = layout ? analyzeLayout(layout) : null;
-  const improvedAnalysis = improvedData?.improvedLayout ? analyzeLayout(improvedData.improvedLayout) : null;
+  const currentAnalysis = layout ? analyzeLayout(layout as any) : null;
+  const improvedAnalysis = improvedData?.improvedLayout ? analyzeLayout(improvedData.improvedLayout as any) : null;
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

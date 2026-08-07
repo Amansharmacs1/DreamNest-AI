@@ -1,7 +1,6 @@
 import { useLayoutStore } from '@/store/layoutStore';
 import { useAnalysisStore } from '@/store/analysisStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Sun, Wind, Move, Ruler } from 'lucide-react';
 import { useMemo } from 'react';
 
@@ -56,7 +55,9 @@ export default function RoomAnalysisPanel() {
               <span className="flex items-center text-amber-600 font-medium"><Sun className="w-3 h-3 mr-1" /> Sunlight</span>
               <span className="font-mono">{roomAnalysis.sunlight}/100</span>
             </div>
-            <Progress value={roomAnalysis.sunlight} className="h-1.5 [&>div]:bg-amber-400" />
+            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-400" style={{ width: `${roomAnalysis.sunlight}%` }} />
+            </div>
           </div>
           
           <div>
@@ -64,7 +65,9 @@ export default function RoomAnalysisPanel() {
               <span className="flex items-center text-cyan-600 font-medium"><Wind className="w-3 h-3 mr-1" /> Ventilation</span>
               <span className="font-mono">{roomAnalysis.ventilation}/100</span>
             </div>
-            <Progress value={roomAnalysis.ventilation} className="h-1.5 [&>div]:bg-cyan-400" />
+            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-cyan-400" style={{ width: `${roomAnalysis.ventilation}%` }} />
+            </div>
           </div>
         </div>
 
