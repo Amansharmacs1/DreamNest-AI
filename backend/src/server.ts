@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import layoutRoutes from './routes/layoutRoutes';
 import aiRoutes from './routes/aiRoutes';
+import analysisRoutes from './routes/analysisRoutes';
 
 dotenv.config();
 
@@ -18,6 +19,8 @@ app.use(express.json());
 // Routes
 app.use('/api/layout', layoutRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/analysis', analysisRoutes);
+
 
 // Health Check
 app.get('/api/health', (req, res) => {

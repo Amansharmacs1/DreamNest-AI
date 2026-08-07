@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 import { useAIStore } from '@/store/aiStore';
 import { useWizardStore } from '@/store/wizardStore';
+import { useAnalysisStore } from '@/store/analysisStore';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, CheckCircle, AlertTriangle, TrendingUp, DollarSign, Send, Mail } from 'lucide-react';
+import { Loader2, FileText, CheckCircle, AlertTriangle, TrendingUp, DollarSign, Send, Mail, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 
 export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const { layout } = useLayoutStore();
   const { provider } = useAIStore();
+  const { analysisResult } = useAnalysisStore();
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
   const [cost, setCost] = useState<any>(null);
@@ -240,7 +242,34 @@ ${cost?.savingsSuggestions?.map((s: string) => '• ' + s.replace(/\*\*/g, '')).
                 </div>
               )}
 
-              {/* Analysis Section */}
+              {/* Analysis Results (Local Simulation) */}
+              {analysisResult && (
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+                    <Activity className="w-5 h-5 text-indigo-600" /> Environmental Simulation Score: {analysisResult.overallScore}/100
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="p-4 bg-slate-50 rounded-lg text-center">
+                      <p className="text-sm text-slate-500 font-medium mb-1">Space Utilization</p>
+                      <p className="text-xl font-bold text-slate-800">{Math.round((analysisResult.spaceUtilization.usableArea / analysisResult.spaceUtilization.builtUpArea) * 100)}%</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-lg text-center">
+                      <p className="text-sm text-slate-500 font-medium mb-1">Sunlight Score</p>
+                      <p className="text-xl font-bold text-amber-600">{analysisResult.sunlight.score}/100</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-lg text-center">
+                      <p className="text-sm text-slate-500 font-medium mb-1">Ventilation Score</p>
+                      <p className="text-xl font-bold text-cyan-600">{analysisResult.ventilation.score}/100</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-lg text-center">
+                      <p className="text-sm text-slate-500 font-medium mb-1">Solar Potential</p>
+                      <p className="text-xl font-bold text-green-600">{analysisResult.energy.solarPotential.estimatedMonthlyGeneration} kWh/mo</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Analysis Section (AI) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                   <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-emerald-700">

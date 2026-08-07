@@ -139,3 +139,52 @@ export interface GeneratedLayout {
   usableArea: { width: number; length: number; startX: number; startY: number };
   rooms: RoomDimensions[];
 }
+
+export interface SunlightAnalysis {
+  score: number;
+  rooms: { roomId: string; sunlightHours: number; score: number }[];
+}
+
+export interface VentilationAnalysis {
+  score: number;
+  rooms: { roomId: string; crossVentilation: boolean; score: number }[];
+}
+
+export interface AccessibilityAnalysis {
+  score: number;
+  issues: { roomId: string; issue: string; severity: 'low' | 'medium' | 'high' }[];
+}
+
+export interface EnergyAnalysis {
+  score: number;
+  solarPotential: {
+    roofArea: number;
+    panelCount: number;
+    estimatedMonthlyGeneration: number;
+  };
+}
+
+export interface SpaceUtilization {
+  totalPlotArea: number;
+  builtUpArea: number;
+  usableArea: number;
+  circulationArea: number;
+  wastedArea: number;
+}
+
+export interface AIImprovementSuggestion {
+  id: string;
+  description: string;
+  type: 'lighting' | 'ventilation' | 'space' | 'general';
+  suggestedChanges: any;
+}
+
+export interface AnalysisResult {
+  sunlight: SunlightAnalysis;
+  ventilation: VentilationAnalysis;
+  accessibility: AccessibilityAnalysis;
+  energy: EnergyAnalysis;
+  spaceUtilization: SpaceUtilization;
+  aiSuggestions: AIImprovementSuggestion[];
+  overallScore: number;
+}

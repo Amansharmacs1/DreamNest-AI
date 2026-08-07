@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCcw, Undo, Redo, Home } from 'lucide-react';
+import { Download, RefreshCcw, Undo, Redo, Home, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useThreeStore } from '@/store/threeStore';
+import { useAnalysisStore } from '@/store/analysisStore';
 import jsPDF from 'jspdf';
 import RoomElement from './RoomElement';
 import RoomInspector from './RoomInspector';
@@ -14,10 +15,14 @@ import Minimap from '../three/ui/Minimap';
 import FirstPersonHUD from '../three/ui/FirstPersonHUD';
 import { Box, Sparkles } from 'lucide-react';
 import SmartReportModal from '../components/ai/SmartReportModal';
+import AnalysisControlPanel from './AnalysisControlPanel';
+import RoomAnalysisPanel from './RoomAnalysisPanel';
+import HeatmapOverlay from './HeatmapOverlay'; // 2D heatmap overlay
 
 export default function FloorPlanViewer() {
   const { layout, undo, redo, history, future, reset } = useLayoutStore();
   const triggerExportGLTF = useThreeStore((state) => state.triggerExportGLTF);
+  const { isAnalysisModeActive, setAnalysisMode } = useAnalysisStore();
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
   
@@ -51,7 +56,6 @@ export default function FloorPlanViewer() {
       svgClone.setAttribute('width', `${widthPx}px`);
       svgClone.setAttribute('height', `${heightPx}px`);
       
-      // Inject some base styles that tailwind would normally provide to ensure rendering looks correct
       const style = document.createElement('style');
       style.textContent = `
         text { font-family: sans-serif; }
@@ -61,7 +65,6 @@ export default function FloorPlanViewer() {
       const svgData = new XMLSerializer().serializeToString(svgClone);
       const canvas = document.createElement('canvas');
       
-      // High resolution scale
       const scale = 3; 
       canvas.width = widthPx * scale;
       canvas.height = heightPx * scale;
@@ -117,7 +120,6 @@ export default function FloorPlanViewer() {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Only pan on background click, not on rooms
     if ((e.target as SVGElement).tagName !== 'svg' && (e.target as SVGElement).tagName !== 'rect') return;
     if ((e.target as SVGElement).classList.contains('room')) return;
     
@@ -151,8 +153,8 @@ export default function FloorPlanViewer() {
   const activeRooms = layout.rooms.filter((r: any) => (r.floor || 0) === activeFloor);
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <header className="flex flex-col md:flex-row items-center justify-between p-4 bg-white border-b shadow-sm z-10 gap-4">
+    <div className="flex flex-col h-screen bg-background relative overflow-hidden">
+      <header className="flex flex-col md:flex-row items-center justify-between p-4 bg-white border-b shadow-sm z-20 gap-4 relative">
         <div className="flex items-center justify-between w-full md:w-auto">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
@@ -171,6 +173,15 @@ export default function FloorPlanViewer() {
         </div>
         
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-center md:justify-end">
+          <Button 
+            variant={isAnalysisModeActive ? "secondary" : "outline"}
+            className={isAnalysisModeActive ? "bg-indigo-100 text-indigo-700 border-indigo-200" : ""}
+            size="sm" 
+            onClick={() => setAnalysisMode(!isAnalysisModeActive)}
+          >
+            <Activity className="w-4 h-4 mr-1 md:mr-2" /> 
+            <span className="hidden sm:inline">{isAnalysisModeActive ? 'Exit Analysis' : 'Analyze'}</span>
+          </Button>
           <div className="hidden md:flex gap-2">
             <Button variant="outline" size="sm" onClick={undo} disabled={history.length === 0}>
               <Undo className="w-4 h-4 mr-2" /> Undo
@@ -206,7 +217,13 @@ export default function FloorPlanViewer() {
         </div>
       </header>
 
-      <RoomInspector />
+      {!isAnalysisModeActive && <RoomInspector />}
+      {isAnalysisModeActive && (
+        <>
+          <AnalysisControlPanel />
+          <RoomAnalysisPanel />
+        </>
+      )}
 
       {viewMode === '2d' ? (
         <main 
@@ -241,7 +258,6 @@ export default function FloorPlanViewer() {
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
           >
-            {/* Main SVG Canvas */}
             <div className="bg-white shadow-2xl relative" style={{ width: `${viewBoxWidth * 10}px`, height: `${viewBoxHeight * 10}px` }}>
               <svg 
                 ref={svgRef}
@@ -250,10 +266,8 @@ export default function FloorPlanViewer() {
                 viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
                 className="drop-shadow-sm"
               >
-                {/* Plot boundary */}
                 <rect x="0" y="0" width={viewBoxWidth} height={viewBoxHeight} fill="none" stroke="#2563EB" strokeWidth="0.5" strokeDasharray="2,2" />
                 
-                {/* Usable Area boundary */}
                 <rect 
                   x={layout.usableArea.startX} 
                   y={layout.usableArea.startY} 
@@ -264,15 +278,15 @@ export default function FloorPlanViewer() {
                   strokeWidth="0.5" 
                 />
                 
-                {/* Rooms */}
                 {activeRooms.map((room: any) => (
                   <RoomElement key={room.id} room={room} />
                 ))}
+                
+                {isAnalysisModeActive && <HeatmapOverlay />}
               </svg>
             </div>
           </div>
           
-          {/* Controls Overlay */}
           <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-2 z-10">
             <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.min(z + 0.2, 3))} className="w-10 h-10 rounded-full shadow-md bg-white">+</Button>
             <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-full shadow-md bg-white">-</Button>
@@ -281,12 +295,10 @@ export default function FloorPlanViewer() {
             </Button>
           </div>
           
-          {/* Scale indicator */}
           <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 bg-white/90 backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-md shadow-md text-xs md:text-sm font-medium border z-10">
             Scale: {Math.round(zoom * 100)}% <span className="hidden sm:inline">| 1 unit = 1 {layout.plotDimensions.unit}</span>
           </div>
 
-          {/* Floor Selector */}
           {maxFloor > 0 && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-1.5 py-1.5 md:px-2 md:py-2 rounded-full shadow-lg border flex gap-1 items-center z-10">
               {Array.from({ length: maxFloor + 1 }).map((_, i) => (
@@ -304,12 +316,12 @@ export default function FloorPlanViewer() {
           )}
         </main>
       ) : (
-        <main className="flex-1 relative overflow-hidden bg-black">
+        <main className="flex-1 relative overflow-hidden bg-black z-0">
           <SceneEngine />
-          <ControlPanel />
+          {!isAnalysisModeActive && <ControlPanel />}
           <Minimap />
           <FirstPersonHUD />
-          <CustomizationPanel />
+          {!isAnalysisModeActive && <CustomizationPanel />}
         </main>
       )}
       <SmartReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
