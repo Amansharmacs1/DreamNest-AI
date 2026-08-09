@@ -11,7 +11,7 @@ function convertToFeet(value: number, unit: string): number {
   }
 }
 
-function legalizeLayout(layout: any) {
+export function legalizeLayout(layout: any) {
   // 1. Grid Snap
   layout.rooms.forEach((room: any, index: number) => {
     if (!room.id) room.id = `room-${index}-${Date.now()}`;

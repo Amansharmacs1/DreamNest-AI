@@ -5,11 +5,15 @@ import mongoose from 'mongoose';
 import layoutRoutes from './routes/layoutRoutes';
 import aiRoutes from './routes/aiRoutes';
 import analysisRoutes from './routes/analysisRoutes';
+import authRoutes from './routes/authRoutes';
+import projectRoutes from './routes/projectRoutes';
+import optimizationRoutes from './routes/optimizationRoutes';
+import constructionRoutes from './routes/constructionRoutes';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dreamnest';
 
 // Middleware
@@ -20,6 +24,10 @@ app.use(express.json());
 app.use('/api/layout', layoutRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analysis', analysisRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/optimization', optimizationRoutes);
+app.use('/api/construction', constructionRoutes);
 
 
 // Health Check

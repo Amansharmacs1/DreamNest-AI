@@ -48,7 +48,14 @@ export default function LightingManager() {
 
   return (
     <>
-      <ambientLight intensity={config.ambientIntensity} color={config.ambientColor} />
+      {/* Global Illumination Approximation */}
+      <hemisphereLight 
+        intensity={config.ambientIntensity * 1.5} 
+        color={config.ambientColor} 
+        groundColor={timeOfDay === 'night' ? '#111111' : '#4a7c36'} // green bounce from grass
+      />
+      
+      {/* Sun / Moon Light */}
       <directionalLight
         ref={dirLightRef}
         castShadow={showShadows}
@@ -63,6 +70,7 @@ export default function LightingManager() {
         shadow-camera-near={1}
         shadow-camera-far={300}
         shadow-bias={-0.0005}
+        shadow-normalBias={0.02}
       />
     </>
   );

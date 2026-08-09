@@ -1,10 +1,13 @@
-import { getMaterial, type MaterialType } from '../materials/MaterialFactory';
-import * as THREE from 'three';
+import { Materials, getRoomFloorMaterial, getRoomWallMaterial } from '../materials/MaterialSystem';
 import { useThreeStore } from '@/store/threeStore';
 import { useLayoutStore } from '@/store/layoutStore';
 import { Html } from '@react-three/drei';
 import FurnitureGenerator from './FurnitureGenerator';
 import RoomLighting from '../lights/RoomLighting';
+import ProceduralDoor from './ProceduralDoor';
+import ProceduralWindow from './ProceduralWindow';
+
+import { useMemo } from 'react';
 
 const WALL_HEIGHT = 10;
 const WALL_THICKNESS = 0.5;
@@ -13,35 +16,26 @@ export default function RoomGenerator({ room }: { room: any }) {
   const showRoof = useThreeStore((state) => state.showRoof);
   const showLabels = useThreeStore((state) => state.showLabels);
   const transparentWalls = useThreeStore((state) => state.transparentWalls);
-  const wireframe = useThreeStore((state) => state.wireframe);
-  const theme = useThreeStore((state) => state.theme);
   const setSelectedRoom = useLayoutStore((state) => state.setSelectedRoom);
-
   const roomNameLower = (room.name || '').toLowerCase();
   const isSwimmingPool = roomNameLower.includes('pool');
   const isSolarPanels = roomNameLower.includes('solar');
-  const isGarden = roomNameLower.includes('garden') || roomNameLower.includes('backyard') || roomNameLower.includes('kids');
-  const isParking = roomNameLower.includes('parking');
 
-  const getFloorMaterialType = (): MaterialType => {
-    if (isGarden) return 'grass';
-    if (isParking) return 'concrete';
-    switch (room.category) {
-      case 'living': return 'floor_living';
-      case 'sleeping': return 'floor_sleeping';
-      case 'service': return 'floor_service';
-      case 'outdoor': return 'floor_outdoor';
-      default: return 'concrete';
-    }
-  };
+  const baseWallMat = getRoomWallMaterial(roomNameLower);
+  const wallMat = useMemo(() => {
+    if (!transparentWalls) return baseWallMat;
+    const mat = baseWallMat.clone();
+    mat.transparent = true;
+    mat.opacity = 0.3;
+    return mat;
+  }, [baseWallMat, transparentWalls]);
 
-  const wallMat = getMaterial('wall', transparentWalls, wireframe, theme) as THREE.MeshStandardMaterial;
-  const floorMat = getMaterial(getFloorMaterialType(), false, wireframe, theme);
-  const roofMat = getMaterial('roof', false, wireframe, theme);
-  const poolWaterMat = getMaterial('pool_water', false, wireframe, theme);
-  const poolTileMat = getMaterial('pool_tile', false, wireframe, theme);
-  const solarPvMat = getMaterial('solar_pv', false, wireframe, theme);
-  const solarFrameMat = getMaterial('solar_frame', false, wireframe, theme);
+  const floorMat = getRoomFloorMaterial(roomNameLower);
+  const roofMat = Materials.RoofConcrete;
+  const poolWaterMat = Materials.Grass; // Temporary fallback for pool
+  const poolTileMat = Materials.FloorTiles;
+  const solarPvMat = Materials.MetalDark;
+  const solarFrameMat = Materials.AluminiumFrame;
 
   // Room coordinates are top-left based (from 2D SVG layout)
   // Three.js meshes are center-based, so we shift by half width/length
@@ -50,8 +44,8 @@ export default function RoomGenerator({ room }: { room: any }) {
   // Elevate room based on its floor
   const floorY = (room.floor || 0) * WALL_HEIGHT;
 
-  const glassMat = getMaterial('glass', true, wireframe, theme);
-  const woodMat = getMaterial('wood', false, wireframe, theme);
+  // Use shared material
+  // glassMat and woodMat removed here as they are inside Procedural models
 
   const renderWall = (wallType: 'top' | 'bottom' | 'left' | 'right', wallLength: number) => {
     const openings = [
@@ -115,24 +109,26 @@ export default function RoomGenerator({ room }: { room: any }) {
           </mesh>
         );
         
-        const glassHeight = op.height - sillHeight;
-        if (glassHeight > 0) {
-          const glassCy = sillHeight + glassHeight / 2 - WALL_HEIGHT / 2;
-          segments.push(
-            <mesh key={`glass-${idx}`} castShadow receiveShadow position={[cx, glassCy, 0]} material={glassMat} layers={2}>
-              <boxGeometry args={[actualWidth, glassHeight, WALL_THICKNESS * 0.3]} />
-            </mesh>
-          );
-        }
-      }
-
-      // 4. Door Frame
-      if (op.type === 'door') {
-        const cy = op.height / 2 - WALL_HEIGHT / 2;
         segments.push(
-          <mesh key={`door-${idx}`} castShadow receiveShadow position={[cx, cy, 0]} material={woodMat} layers={2}>
-            <boxGeometry args={[actualWidth, op.height, WALL_THICKNESS * 0.4]} />
-          </mesh>
+          <ProceduralWindow 
+            key={`win-${idx}`} 
+            position={[cx, sillHeight + (op.height || 4) / 2 - WALL_HEIGHT / 2, 0]} 
+            width={actualWidth} 
+            height={op.height || 4} 
+            thickness={WALL_THICKNESS} 
+          />
+        );
+      } else {
+        const isMain = room.category === 'outdoor' || room.name.toLowerCase().includes('main');
+        segments.push(
+          <ProceduralDoor 
+            key={`door-${idx}`} 
+            position={[cx, -WALL_HEIGHT / 2 + (op.height || 7) / 2, 0]} 
+            width={actualWidth} 
+            height={op.height || 7} 
+            thickness={WALL_THICKNESS} 
+            isMain={isMain}
+          />
         );
       }
 

@@ -125,6 +125,52 @@ export function analyzeLayout(layout: GeneratedLayout): AnalysisResult {
 
   const energyScore = Math.round((avgVentilationScore + avgSunlightScore) / 2);
 
+    const aiSuggestions: any[] = [];
+
+    // Detailed Window Analysis (Task 4)
+    sunlightRooms.forEach(sr => {
+      if (sr.score < 40) {
+        const roomName = layout.rooms.find(r => r.id === sr.roomId)?.name || 'Room';
+        aiSuggestions.push({
+          id: `win-${sr.roomId}`,
+          description: `${roomName} receives limited direct sunlight. Consider adding or increasing window area.`,
+          type: 'lighting'
+        });
+      }
+    });
+
+    // Parking Analysis (Task 9)
+    const parkingRoom = layout.rooms.find(r => r.name.toLowerCase().includes('parking') || r.name.toLowerCase().includes('garage'));
+    if (parkingRoom) {
+      if (parkingRoom.width < 9 || parkingRoom.length < 18) {
+        aiSuggestions.push({
+          id: `park-${parkingRoom.id}`,
+          description: `Parking space (${Math.round(parkingRoom.width)}x${Math.round(parkingRoom.length)} ft) may be too small for a standard vehicle. Minimum 9x18 ft recommended.`,
+          type: 'space'
+        });
+      }
+    }
+
+    // Garden & Outdoor Analysis (Task 10)
+    const gardenRoom = layout.rooms.find(r => r.category === 'outdoor' && r.name.toLowerCase().includes('garden'));
+    if (gardenRoom) {
+      const centerX = layout.usableArea.startX + (layout.usableArea.width / 2);
+      const gardenCenterX = gardenRoom.x + (gardenRoom.width / 2);
+      if (gardenCenterX > centerX) {
+        aiSuggestions.push({
+          id: `garden-${gardenRoom.id}`,
+          description: `Garden is positioned on the East side, receiving good morning sunlight.`,
+          type: 'general'
+        });
+      } else {
+        aiSuggestions.push({
+          id: `garden-${gardenRoom.id}`,
+          description: `Consider moving the garden toward the East side for better morning sunlight exposure.`,
+          type: 'general'
+        });
+      }
+    }
+
   return {
     spaceUtilization: {
       totalPlotArea,
@@ -153,7 +199,7 @@ export function analyzeLayout(layout: GeneratedLayout): AnalysisResult {
       score: accessibilityScore,
       issues: accessibilityIssues
     },
-    aiSuggestions: [],
+    aiSuggestions,
     overallScore: Math.round((energyScore + accessibilityScore + (usableArea/builtUpArea * 100)) / 3)
   };
 }

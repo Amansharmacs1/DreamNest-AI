@@ -4,8 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Download, RefreshCcw, Undo, Redo, Home, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useThreeStore } from '@/store/threeStore';
+import { useAuthStore } from '@/store/authStore';
 import { useAnalysisStore } from '@/store/analysisStore';
+import { useCloudProjectStore } from '@/store/cloudProjectStore';
 import jsPDF from 'jspdf';
+import AuthModal from '@/components/auth/AuthModal';
+import OptimizationPanel from './OptimizationPanel';
+import OptimizationComparisonOverlay from './OptimizationComparisonOverlay';
+import ConstructionWorkspace from './ConstructionWorkspace';
+import { useConstructionStore } from '@/store/constructionStore';
 import RoomElement from './RoomElement';
 import RoomInspector from './RoomInspector';
 import CustomizationPanel from './CustomizationPanel';
@@ -33,6 +40,11 @@ export default function FloorPlanViewer() {
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const [activeFloor, setActiveFloor] = useState(0);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  
+  const { isAuthenticated } = useAuthStore();
+  const { currentProjectId } = useCloudProjectStore();
+  const { isConstructionModeActive, setConstructionMode } = useConstructionStore();
 
   if (!layout) {
     return (
@@ -160,7 +172,9 @@ export default function FloorPlanViewer() {
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <Home className="w-5 h-5 text-primary" />
             </Button>
-            <h1 className="text-lg md:text-xl font-bold truncate">Floor Plan Viewer</h1>
+            <h1 className="text-lg md:text-xl font-bold truncate">
+              {currentProjectId ? 'Cloud Project' : 'Floor Plan Viewer'}
+            </h1>
           </div>
           <div className="md:hidden flex gap-2">
             <Button variant="outline" size="icon" onClick={undo} disabled={history.length === 0} title="Undo">
@@ -200,6 +214,25 @@ export default function FloorPlanViewer() {
           <Button variant={viewMode === '3d' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode(v => v === '2d' ? '3d' : '2d')}>
             <Box className="w-4 h-4 mr-1 md:mr-2" /> {viewMode === '2d' ? 'View 3D' : 'View 2D'}
           </Button>
+
+          {/* Auth & Cloud Controls */}
+          <div className="flex items-center gap-2 mt-4 md:mt-0">
+          <Button variant="outline" size="sm" onClick={() => setConstructionMode(!isConstructionModeActive)} className={isConstructionModeActive ? 'bg-amber-100 text-amber-900 border-amber-300' : ''}>
+            <Activity className="w-4 h-4 mr-2" /> Construction Mode
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setAnalysisMode(!isAnalysisModeActive)} className={isAnalysisModeActive ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : ''}>
+            <Activity className="w-4 h-4 mr-2" /> Analysis Mode
+          </Button>
+          {isAuthenticated ? (
+            <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')} className="border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+              My Projects
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+              Sign In
+            </Button>
+          )}
+          </div>
           
           <div className="flex gap-2 w-full sm:w-auto justify-center mt-2 sm:mt-0">
             <Button variant="secondary" size="sm" onClick={exportPNG} className="flex-1 sm:flex-none">
@@ -325,6 +358,14 @@ export default function FloorPlanViewer() {
         </main>
       )}
       <SmartReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      
+      {/* Optimization Interfaces */}
+      {!isAnalysisModeActive && !isConstructionModeActive && viewMode === '2d' && <OptimizationPanel />}
+      {viewMode === '2d' && <OptimizationComparisonOverlay />}
+      
+      {/* Construction Workspace */}
+      {viewMode === '2d' && <ConstructionWorkspace />}
     </div>
   );
 }

@@ -1,6 +1,12 @@
 import type { LightFixture } from '@/types';
+import { useThreeStore } from '@/store/threeStore';
 
 export default function RoomLighting({ lights }: { lights: LightFixture[] }) {
+  const timeOfDay = useThreeStore((state) => state.timeOfDay);
+  
+  if (timeOfDay === 'morning' || timeOfDay === 'afternoon') {
+    return null; // Save performance during bright day
+  }
 
   // If there's no roof, ceiling lights might look strange floating, but they still cast useful interior shadows.
   return (

@@ -1,8 +1,10 @@
 import { useLayoutStore } from '@/store/layoutStore';
-import { X, Lightbulb, Lamp, Gem, DollarSign } from 'lucide-react';
+import { useOptimizationStore } from '@/store/optimizationStore';
+import { X, Lightbulb, Lamp, Gem, DollarSign, Lock, Unlock } from 'lucide-react';
 
 export default function RoomInspector() {
   const { layout, selectedRoomId, setSelectedRoom } = useLayoutStore();
+  const { isRoomLocked, toggleRoomLock } = useOptimizationStore();
 
   if (!selectedRoomId || !layout) return null;
 
@@ -14,12 +16,24 @@ export default function RoomInspector() {
       {/* Header */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-md p-4 border-b flex justify-between items-center z-10">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">{room.name}</h2>
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            {room.name}
+            {isRoomLocked(room.id) && <Lock className="w-4 h-4 text-amber-500" />}
+          </h2>
           <p className="text-xs text-gray-500 capitalize">{room.category} • {Math.round(room.width)}' x {Math.round(room.length)}'</p>
         </div>
-        <button onClick={() => setSelectedRoom(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <X className="w-5 h-5 text-gray-500" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => toggleRoomLock(room.id)} 
+            className={`p-2 rounded-full transition-colors ${isRoomLocked(room.id) ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'}`}
+            title={isRoomLocked(room.id) ? "Unlock Room" : "Lock Room (Exclude from Optimization)"}
+          >
+            {isRoomLocked(room.id) ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+          </button>
+          <button onClick={() => setSelectedRoom(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
       </div>
 
       <div className="p-4 space-y-6">

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
+import { useConstructionStore } from '@/store/constructionStore';
 
 export default function RoomElement({ room }: { room: any }) {
   const { updateRoom, layout, selectedRoomId, setSelectedRoom } = useLayoutStore();
+  const { isConstructionModeActive } = useConstructionStore();
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ mouseX: 0, mouseY: 0, roomX: 0, roomY: 0, roomWidth: 0, roomLength: 0 });
@@ -255,6 +257,33 @@ export default function RoomElement({ room }: { room: any }) {
           />
         </g>
       )}
+
+      {/* DIMENSION LINES & MEP OVERLAYS FOR CONSTRUCTION MODE */}
+      {isConstructionModeActive && (
+        <foreignObject x="0" y="0" width={room.width} height={room.length} className="pointer-events-none overflow-visible">
+          <div className="relative w-full h-full">
+            {/* Top Dimension */}
+            <div className="absolute -top-3 left-0 w-full flex items-center justify-center text-[8px] text-amber-700">
+              <div className="h-px bg-amber-700 w-full absolute top-1/2 -z-10" />
+              <div className="bg-white/80 px-1 font-mono font-bold z-10 rounded">{Math.round(room.width)}'</div>
+              <div className="absolute left-0 w-[2px] h-[6px] bg-amber-700 transform rotate-45" />
+              <div className="absolute right-0 w-[2px] h-[6px] bg-amber-700 transform rotate-45" />
+            </div>
+
+            {/* Right Dimension */}
+            <div className="absolute -right-3 top-0 h-full flex items-center justify-center text-[8px] text-amber-700 origin-center" style={{ writingMode: 'vertical-rl' }}>
+              <div className="w-px bg-amber-700 h-full absolute left-1/2 -z-10" />
+              <div className="bg-white/80 py-1 font-mono font-bold z-10 rounded transform rotate-180">{Math.round(room.length)}'</div>
+              <div className="absolute top-0 w-[6px] h-[2px] bg-amber-700 transform rotate-45" />
+              <div className="absolute bottom-0 w-[6px] h-[2px] bg-amber-700 transform rotate-45" />
+            </div>
+            
+            {/* Electrical Point (heuristic: center light) */}
+            <div className="absolute top-1/2 left-1/2 w-1.5 h-1.5 -ml-[0.75px] -mt-[0.75px] bg-amber-400 rounded-full ring-1 ring-amber-600 animate-pulse shadow-sm" />
+          </div>
+        </foreignObject>
+      )}
+
       <text 
         x={room.width / 2} 
         y={room.length / 2} 
