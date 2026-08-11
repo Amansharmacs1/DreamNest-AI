@@ -57,7 +57,7 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClos
         >
           <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/30">
             <h2 className="text-xl font-bold text-slate-800">
-              {isLogin ? 'Sign In to DreamNest' : 'Create an Account'}
+              {isLogin ? 'Sign In to Nivasa AI' : 'Create an Account'}
             </h2>
             <Button variant="ghost" size="icon" onClick={onClose} disabled={loading}>
               <X className="w-5 h-5" />

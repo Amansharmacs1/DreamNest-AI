@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dreamnest_fallback_secret_for_dev_only';
+const JWT_SECRET = process.env.JWT_SECRET || 'nivasa_fallback_secret_for_dev_only';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.header('Authorization');

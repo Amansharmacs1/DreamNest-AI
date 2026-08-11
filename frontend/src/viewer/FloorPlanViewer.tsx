@@ -111,7 +111,7 @@ export default function FloorPlanViewer() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('DreamNest-FloorPlan.pdf');
+      pdf.save('Nivasa-FloorPlan.pdf');
     } catch (e) {
       console.error('Export PDF failed', e);
       alert('Failed to export PDF.');
@@ -122,7 +122,7 @@ export default function FloorPlanViewer() {
     try {
       const canvas = await getCanvasFromSVG();
       const link = document.createElement('a');
-      link.download = 'DreamNest-FloorPlan.png';
+      link.download = 'Nivasa-FloorPlan.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (e) {

@@ -8,7 +8,7 @@ async function runTests() {
   let token = '';
   let projectId = '';
   let shareToken = '';
-  const testEmail = `test_${Date.now()}@dreamnest.ai`;
+  const testEmail = `test_${Date.now()}@nivasa.ai`;
   const testPassword = 'password123';
 
   // 1. Test Authentication (Register)

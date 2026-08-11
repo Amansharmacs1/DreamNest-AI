@@ -70,7 +70,7 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('DreamNest-Smart-Report.pdf');
+      pdf.save('Nivasa-Smart-Report.pdf');
     } catch (e) {
       console.error('PDF Export failed', e);
       alert('Failed to generate PDF. Please try again.');
@@ -89,7 +89,7 @@ export default function SmartReportModal({ isOpen, onClose }: { isOpen: boolean,
     try {
       // Format the report as text for the email
       const reportText = `
-DreamNest AI Smart Report
+Nivasa AI Smart Report
 ----------------------------------------
 
 Estimated Total Cost: ₹${cost?.totalEstimatedCost?.toLocaleString() || 'N/A'}
@@ -121,7 +121,7 @@ ${cost?.savingsSuggestions?.map((s: string) => '• ' + s.replace(/\*\*/g, '')).
           message: reportText,
           report: reportText,
           summary: reportText,
-          reply_to: "noreply@dreamnest.ai",
+          reply_to: "noreply@nivasa.ai",
         },
         publicKey
       );
@@ -156,7 +156,7 @@ ${cost?.savingsSuggestions?.map((s: string) => '• ' + s.replace(/\*\*/g, '')).
               <FileText className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">Smart Design Report</h2>
+              <h2 className="text-xl font-bold text-slate-800">Nivasa AI Smart Report</h2>
               <p className="text-sm text-slate-500">AI-generated architectural analysis & cost estimation</p>
             </div>
           </div>

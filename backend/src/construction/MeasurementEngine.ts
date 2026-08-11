@@ -64,7 +64,7 @@ export function generateMeasurements(layout: any): MeasurementResult {
     }
 
     // Windows & Doors mock logic if not provided by layout
-    // In DreamNest AI, we procedurally generate these in the 3D engine, but here we can heuristically assume them based on room position
+    // In Nivasa AI, we procedurally generate these in the 3D engine, but here we can heuristically assume them based on room position
     const hasExternalWall = 
       room.x <= (layout.usableArea?.startX || 0) + 2 ||
       room.y <= (layout.usableArea?.startY || 0) + 2 ||

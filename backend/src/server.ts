@@ -32,7 +32,7 @@ app.use('/api/construction', constructionRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'DreamNest AI backend is running' });
+  res.status(200).json({ status: 'ok', message: 'Nivasa AI backend is running' });
 });
 
 // Start the server regardless of DB connection (Phase 1 doesn't strictly need DB yet)

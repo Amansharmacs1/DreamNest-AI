@@ -28,7 +28,7 @@ export default function LandingPage() {
       <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center z-10">
         <div className="flex items-center gap-2">
           <Home className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold tracking-tight text-main">DreamNest AI</span>
+          <span className="text-xl font-bold tracking-tight text-main">Nivasa AI</span>
         </div>
         <div className="space-x-4">
           <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => scrollTo('how-it-works')}>How it Works</Button>
@@ -115,7 +115,7 @@ export default function LandingPage() {
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">How DreamNest AI Works</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">How Nivasa AI Works</h2>
             <p className="text-slate-500 max-w-2xl mx-auto text-lg">From an empty plot to a fully realized architectural blueprint in four simple steps.</p>
           </div>
           
@@ -152,7 +152,7 @@ export default function LandingPage() {
       <section id="features" className="py-24 bg-white z-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-main mb-4">Why choose DreamNest AI?</h2>
+            <h2 className="text-3xl font-bold text-main mb-4">Why choose Nivasa AI?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">Our deterministic engine guarantees precise, practical, and beautiful layouts every time.</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-8">
@@ -178,7 +178,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-main text-white py-12 text-center text-sm z-10">
-        <p className="text-gray-400">© 2026 DreamNest AI. All rights reserved.</p>
+        <p className="text-gray-400">© 2026 Nivasa AI. All rights reserved.</p>
       </footer>
     </div>
   );

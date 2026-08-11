@@ -1,8 +1,8 @@
-# 🏡 DreamNest AI
+# 🏡 Nivasa AI — Your AI Architect
 
 > **Design your dream home in minutes using AI.**
 
-DreamNest AI is an AI-powered home planning platform that transforms user preferences into intelligent floor plans and interactive home visualizations. Users simply describe their dream home through an intuitive guided experience, and DreamNest AI generates optimized layouts, helping them visualize, customize, and plan their future home.
+Nivasa AI is an AI-powered home design platform that can understand user requirements, generate practical layouts, visualize homes in 3D, and evolve toward intelligent architectural planning. Users simply describe their dream home through an intuitive guided experience, and Nivasa AI generates optimized layouts, helping them visualize, customize, and plan their future home.
 
 ---
 
@@ -102,7 +102,7 @@ DreamNest AI is an AI-powered home planning platform that transforms user prefer
 # 📂 Project Structure
 
 ```text
-DreamNest-AI
+Nivasa-AI
 │
 ├── frontend
 │   ├── src
@@ -138,8 +138,8 @@ DreamNest-AI
 ### Clone the repository
 
 ```bash
-git clone https://github.com/your-username/DreamNest-AI.git
-cd DreamNest-AI
+git clone https://github.com/your-username/Nivasa-AI.git
+cd Nivasa-AI
 ```
 
 ### Install frontend
@@ -180,9 +180,9 @@ Screenshots and demo GIFs will be added soon.
 
 ---
 
-# 💡 Why DreamNest AI?
+# 💡 Why Nivasa AI?
 
-Planning a home is often complex, time-consuming, and requires multiple iterations. DreamNest AI simplifies the process by combining intelligent layout generation with an intuitive interface, allowing users to quickly transform their ideas into practical home designs.
+Planning a home is often complex, time-consuming, and requires multiple iterations. Nivasa AI simplifies the process by combining intelligent layout generation with an intuitive interface, allowing users to quickly transform their ideas into practical home designs.
 
 ---
 

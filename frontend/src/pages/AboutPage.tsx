@@ -10,7 +10,7 @@ export default function AboutPage() {
       <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center z-10 bg-slate-50">
         <div className="flex items-center gap-2">
           <Home className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold tracking-tight text-main">DreamNest AI</span>
+          <span className="text-xl font-bold tracking-tight text-main">Nivasa AI</span>
         </div>
         <div>
           <Link to="/">
@@ -35,7 +35,7 @@ export default function AboutPage() {
             
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">About the Project</h1>
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-3xl">
-              <strong className="text-slate-800 font-semibold">DreamNest AI</strong> was built to revolutionize how people approach architectural design. 
+              <strong className="text-slate-800 font-semibold">Nivasa AI</strong> was built to revolutionize how people approach architectural design. 
               Traditional floor planning is expensive, slow, and inaccessible to most people. We combine a deterministic procedural generation engine with cutting-edge Large Language Models (LLMs) to instantly transform natural language requirements into mathematically accurate, interactive 2D and 3D blueprints.
             </p>
 
@@ -75,7 +75,7 @@ export default function AboutPage() {
                 <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Aman Sharma</h1>
                 <p className="text-lg text-slate-300 leading-relaxed max-w-2xl mb-6">
                   Senior AI Engineer, Full Stack Developer, and Software Architect. 
-                  I built DreamNest AI to explore the intersection of deterministic algorithms and generative AI, aiming to democratize complex architectural design.
+                  I built Nivasa AI to explore the intersection of deterministic algorithms and generative AI, aiming to democratize complex architectural design.
                 </p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
                   <span className="px-4 py-2 rounded-full bg-white/10 text-sm font-medium border border-white/10">Full Stack Development</span>
@@ -92,7 +92,7 @@ export default function AboutPage() {
       
       {/* Footer */}
       <footer className="bg-slate-50 text-slate-500 py-8 text-center text-sm z-10 border-t border-slate-200 mt-auto">
-        <p>© 2026 DreamNest AI. Created by Aman Sharma.</p>
+        <p>© 2026 Nivasa AI. Created by Aman Sharma.</p>
       </footer>
     </div>
   );

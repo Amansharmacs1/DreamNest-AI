@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dreamnest_fallback_secret_for_dev_only';
+const JWT_SECRET = process.env.JWT_SECRET || 'nivasa_fallback_secret_for_dev_only';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {

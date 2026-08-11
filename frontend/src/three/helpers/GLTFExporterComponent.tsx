@@ -18,7 +18,7 @@ export default function GLTFExporterComponent() {
           const link = document.createElement('a');
           link.style.display = 'none';
           link.href = url;
-          link.download = 'DreamNest-Interior.gltf';
+          link.download = 'Nivasa-Interior.gltf';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);

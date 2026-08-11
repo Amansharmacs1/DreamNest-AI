@@ -54,7 +54,7 @@ export default function WizardPage() {
       <header className="border-b bg-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
           <Home className="w-6 h-6 text-primary" />
-          <span className="font-bold text-main">DreamNest AI</span>
+          <span className="font-bold text-main">Nivasa AI</span>
         </div>
         <div className="text-sm font-medium text-muted-foreground">
           Step {step} of 5

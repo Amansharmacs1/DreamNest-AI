@@ -25,7 +25,7 @@ export const useAIStore = create<AIState>()(
       closeChat: () => set({ isOpen: false }),
     }),
     {
-      name: 'dreamnest-ai-settings',
+      name: 'nivasa-ai-settings',
     }
   )
 );
