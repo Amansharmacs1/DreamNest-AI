@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { ArrowRight, ExternalLink, Globe, Link as LinkIcon } from 'lucide-react';
+import { ArrowRight, Globe, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { socialLinks } from '@/config/socialLinks';
 
