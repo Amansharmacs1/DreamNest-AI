@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes';
 import projectRoutes from './routes/projectRoutes';
 import optimizationRoutes from './routes/optimizationRoutes';
 import constructionRoutes from './routes/constructionRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/optimization', optimizationRoutes);
 app.use('/api/construction', constructionRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 
 // Health Check

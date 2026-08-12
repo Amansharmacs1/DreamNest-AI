@@ -4,6 +4,7 @@ import type { Variants } from 'framer-motion';
 import { ArrowRight, Globe, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { socialLinks } from '@/config/socialLinks';
+import VisitorCounter from '@/components/Teaser/VisitorCounter';
 
 // --- Reusable Animation Variants ---
 const fadeInUp: Variants = {
@@ -257,6 +258,9 @@ export default function TeaserPage() {
           <div>
             © 2026 NIVASA AI
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 mt-8 flex justify-center md:justify-end">
+          <VisitorCounter />
         </div>
       </footer>
     </div>
