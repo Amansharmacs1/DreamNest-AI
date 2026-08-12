@@ -259,12 +259,11 @@ export default function TeaserPage() {
             <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Instagram</a>
           </div>
           
-          <div>
-            © 2026 NIVASA AI
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <VisitorCounter />
+            <span className="hidden md:inline text-slate-300">|</span>
+            <span>© 2026 NIVASA AI</span>
           </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-6 mt-8 flex justify-center md:justify-end">
-          <VisitorCounter />
         </div>
       </footer>
     </div>
