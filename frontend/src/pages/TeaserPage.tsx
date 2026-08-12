@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { ArrowRight, Globe, Link as LinkIcon } from 'lucide-react';
+import { ArrowRight, Globe, Link as LinkIcon, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { socialLinks } from '@/config/socialLinks';
 import VisitorCounter from '@/components/Teaser/VisitorCounter';
@@ -158,8 +158,9 @@ export default function TeaserPage() {
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5, duration: 1 }}
-                    className="w-16 h-16 border-t-4 border-l-4 border-primary rounded-tl-xl opacity-80"
-                  />
+                  >
+                    <Home className="w-14 h-14 text-primary/80 stroke-[1.5]" />
+                  </motion.div>
                 </div>
               </div>
             </motion.div>
