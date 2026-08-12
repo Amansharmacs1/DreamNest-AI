@@ -135,17 +135,21 @@ export default function TeaserPage() {
               <div className="absolute inset-0 border border-blue-100 rounded-3xl transform rotate-3" />
               <div className="absolute inset-0 border border-blue-50 rounded-3xl transform -rotate-6" />
               
-              {/* Floating elements forming a shape */}
+              {/* Floating Architectural Layers */}
               <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-4 rounded-full border-t-2 border-r-2 border-primary/20"
+                animate={{ y: [-5, 5], rotateX: [50, 52], rotateZ: [-20, -18] }}
+                transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }}
+                className="absolute inset-4 bg-white/40 backdrop-blur-md border border-blue-100 shadow-xl rounded-2xl"
+                style={{ backgroundImage: 'linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
               />
               <motion.div 
-                animate={{ rotate: -360 }}
-                transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-12 rounded-full border-b-2 border-l-2 border-blue-400/30"
-              />
+                animate={{ y: [10, -10], rotateX: [50, 48], rotateZ: [-20, -22] }}
+                transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut", delay: 1 }}
+                className="absolute inset-10 bg-gradient-to-tr from-blue-50/80 to-white/80 backdrop-blur-md border border-primary/20 shadow-2xl rounded-2xl -translate-y-12"
+              >
+                <div className="absolute bottom-6 left-6 w-16 h-16 border-t-[3px] border-l-[3px] border-primary/40 rounded-tl-lg" />
+                <div className="absolute top-6 right-6 w-20 h-20 border-b-[3px] border-r-[3px] border-blue-400/30 rounded-br-lg" />
+              </motion.div>
               
               {/* Core blueprint abstract */}
               <div className="absolute inset-0 flex items-center justify-center">
