@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { ArrowRight, Globe, Link as LinkIcon, Home } from 'lucide-react';
+import { ArrowRight, Globe, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { socialLinks } from '@/config/socialLinks';
 import VisitorCounter from '@/components/Teaser/VisitorCounter';
@@ -123,46 +123,20 @@ export default function TeaserPage() {
             </motion.div>
           </motion.div>
 
-          {/* Hero Visual - Abstract */}
+          {/* Hero Visual - Image */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.2, delay: 0.2 }}
+            initial={{ opacity: 0, scale: 0.9, rotateY: 15 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
             className="relative h-[400px] sm:h-[500px] w-full flex items-center justify-center lg:justify-end perspective-1000"
           >
-            <motion.div animate={floatingAnimation} className="relative w-full max-w-[400px] aspect-square">
-              {/* Abstract structural grid */}
-              <div className="absolute inset-0 border border-blue-100 rounded-3xl transform rotate-3" />
-              <div className="absolute inset-0 border border-blue-50 rounded-3xl transform -rotate-6" />
-              
-              {/* Floating Architectural Layers */}
-              <motion.div 
-                animate={{ y: [-5, 5], rotateX: [50, 52], rotateZ: [-20, -18] }}
-                transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }}
-                className="absolute inset-4 bg-white/40 backdrop-blur-md border border-blue-100 shadow-xl rounded-2xl"
-                style={{ backgroundImage: 'linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+            <motion.div animate={floatingAnimation} className="relative w-full max-w-[550px] aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/20 border border-blue-100/50 group">
+              <img 
+                src="/hero-robot.jpg" 
+                alt="NIVASA AI - Future of Architecture" 
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
               />
-              <motion.div 
-                animate={{ y: [10, -10], rotateX: [50, 48], rotateZ: [-20, -22] }}
-                transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut", delay: 1 }}
-                className="absolute inset-10 bg-gradient-to-tr from-blue-50/80 to-white/80 backdrop-blur-md border border-primary/20 shadow-2xl rounded-2xl -translate-y-12"
-              >
-                <div className="absolute bottom-6 left-6 w-16 h-16 border-t-[3px] border-l-[3px] border-primary/40 rounded-tl-lg" />
-                <div className="absolute top-6 right-6 w-20 h-20 border-b-[3px] border-r-[3px] border-blue-400/30 rounded-br-lg" />
-              </motion.div>
-              
-              {/* Core blueprint abstract */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 bg-gradient-to-tr from-blue-50 to-white border border-blue-100/50 shadow-2xl shadow-blue-500/10 rounded-2xl backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                  <motion.div 
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 1 }}
-                  >
-                    <Home className="w-14 h-14 text-primary/80 stroke-[1.5]" />
-                  </motion.div>
-                </div>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/20 to-transparent pointer-events-none" />
             </motion.div>
           </motion.div>
         </div>
