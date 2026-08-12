@@ -65,9 +65,9 @@ export default function TeaserPage() {
             </div>
           </div>
           <div className="flex items-center gap-6 text-sm font-medium text-slate-600">
-            <span className="hidden sm:inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
+            <button onClick={scrollToBottom} className="hidden sm:inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold hover:bg-blue-100 transition-colors cursor-pointer">
               Building
-            </span>
+            </button>
             <button onClick={scrollToBottom} className="hover:text-primary transition-colors">
               Follow
             </button>
@@ -91,13 +91,17 @@ export default function TeaserPage() {
             animate="visible"
             className="flex flex-col items-start z-10"
           >
-            <motion.div variants={fadeInUp} className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100 text-primary text-xs font-semibold uppercase tracking-wider">
+            <motion.button 
+              variants={fadeInUp} 
+              onClick={scrollToBottom}
+              className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100 text-primary text-xs font-semibold uppercase tracking-wider hover:bg-blue-100 transition-colors cursor-pointer"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
               Currently Building
-            </motion.div>
+            </motion.button>
             
             <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
               Something is <br />
