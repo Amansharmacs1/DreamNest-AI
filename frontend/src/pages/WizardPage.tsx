@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWizardStore } from '@/store/wizardStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +20,24 @@ export default function WizardPage() {
   const { setLayout } = useLayoutStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0);
+
+  const loadingMessages = [
+    "Analyzing plot dimensions...",
+    "Planning room relationships...",
+    "Optimizing dimensions and circulation...",
+    "Validating geometric boundaries...",
+    "Preparing your AI-architected floor plan..."
+  ];
+
+  // Rotate through loading messages while backend processes
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setLoadingStage((prev) => Math.min(prev + 1, loadingMessages.length - 1));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleNext = () => setStep(Math.min(step + 1, 5));
   const handlePrev = () => setStep(Math.max(step - 1, 1));
@@ -27,12 +45,13 @@ export default function WizardPage() {
   const handleGenerate = async () => {
     try {
       setLoading(true);
+      setLoadingStage(0);
       const layout = await generateLayoutAPI(preferences);
       setLayout(layout);
       navigate('/viewer');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate layout', error);
-      alert('Failed to generate layout. Please try again.');
+      alert(error.response?.data?.error || 'Failed to generate layout. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -83,12 +102,29 @@ export default function WizardPage() {
           </div>
         </div>
 
-        <Card className="shadow-lg border-gray-100">
-          <CardContent className="p-6 md:p-10">
-            {renderStep()}
-          </CardContent>
-        </Card>
-        
+        <div className="flex-1 mt-8">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full space-y-6">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Home className="w-6 h-6 text-blue-600 animate-pulse" />
+                </div>
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-gray-900">Designing your home...</h3>
+                <p className="text-blue-600 font-medium animate-pulse">{loadingMessages[loadingStage]}</p>
+                <p className="text-sm text-gray-500 max-w-sm mt-2">NIVASA AI is evaluating hundreds of architectural parameters to create the perfect layout.</p>
+              </div>
+            </div>
+          ) : (
+            <Card className="shadow-lg border-gray-100">
+              <CardContent className="p-6 md:p-10">
+                {renderStep()}
+              </CardContent>
+            </Card>
+          )}
+        </div>
         <div className="mt-6 flex justify-start">
           <Button variant="outline" onClick={handlePrev} disabled={step === 1 || loading}>
             Back

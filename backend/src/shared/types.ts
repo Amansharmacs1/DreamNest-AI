@@ -82,6 +82,39 @@ export interface Furniture {
   color: string;
 }
 
+export interface AnalysisIssue {
+  severity: 'High' | 'Medium' | 'Low';
+  category: 'Lighting' | 'Ventilation' | 'Circulation' | 'Privacy' | 'Accessibility' | 'Space' | 'Parking' | 'Energy' | 'Safety';
+  description: string;
+  recommendation: string;
+}
+
+export interface MetricCategory {
+  score: number;
+  status: 'excellent' | 'good' | 'moderate' | 'tight' | 'limited' | 'needs_attention';
+  metrics?: any;
+  rooms?: any[];
+  issues?: AnalysisIssue[];
+  recommendations?: string[];
+}
+
+export interface AnalysisResult {
+  overallScore: number;
+  spaceEfficiency: MetricCategory;
+  naturalLighting: MetricCategory;
+  ventilation: MetricCategory;
+  circulation: MetricCategory;
+  privacy: MetricCategory;
+  accessibility: MetricCategory;
+  energyEfficiency: MetricCategory;
+  parking: MetricCategory;
+  outdoorSpace: MetricCategory;
+  staircase: MetricCategory;
+  issues: AnalysisIssue[];
+  recommendations: string[];
+  explanation?: string; // Gemini explanation of the overall score
+}
+
 export interface LightFixture {
   id: string;
   type: 'ceiling' | 'wall' | 'table' | 'pendant';
@@ -144,8 +177,37 @@ export interface RoomDimensions {
   costEstimate?: CostEstimate;
 }
 
+export interface FloorPlan {
+  floor: number;
+  rooms: RoomDimensions[];
+  stairs?: any[]; // To be expanded later if needed
+  doors?: any[]; // To be expanded later if needed
+  windows?: any[]; // To be expanded later if needed
+}
+
+export interface DesignScore {
+  overall: number;
+  spaceEfficiency: number;
+  circulation: number;
+  lighting: number;
+  ventilation: number;
+  privacy: number;
+}
+
+export interface DesignMetadata {
+  source: 'gemini' | 'deterministic';
+  confidence: number;
+  reasoning: string[];
+  validated: boolean;
+  score?: DesignScore;
+  explanation?: string;
+  variantName?: string;
+}
+
 export interface GeneratedLayout {
   plotDimensions: { width: number; length: number; unit: string };
   usableArea: { width: number; length: number; startX: number; startY: number };
   rooms: RoomDimensions[];
+  floors?: FloorPlan[];
+  metadata?: DesignMetadata;
 }

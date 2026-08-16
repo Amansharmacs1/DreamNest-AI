@@ -1,25 +1,30 @@
 import { Request, Response } from 'express';
-import { AISmartAnalyzer } from '../services/ai/aiSmartAnalyzer';
-import { legalizeLayout } from '../algorithms/aiLayoutEngine';
+import { runDeterministicAnalysis } from '../algorithms/homeAnalysisEngine';
+import { explainAnalysisResult } from '../services/geminiAnalysisService';
+import { GeneratedLayout } from '../shared/types';
 
+// Backward compatibility for existing improve mock
 export const improveDesign = async (req: Request, res: Response) => {
+  res.json({ success: true, message: "Use /api/analysis/generate for full environmental analysis." });
+};
+
+export const generateAnalysis = async (req: Request, res: Response) => {
   try {
-    const { layout, provider } = req.body;
+    const layout = req.body as GeneratedLayout;
     
-    if (!layout) {
-      return res.status(400).json({ error: 'Layout is required' });
+    if (!layout || !layout.rooms || !layout.plotDimensions) {
+      return res.status(400).json({ error: 'Invalid layout provided for analysis.' });
     }
 
-    const improvedData = await AISmartAnalyzer.generateImprovementSuggestions(layout, provider);
-    
-    // Validate and fix the AI-generated layout to ensure spatial constraints (Task 21)
-    if (improvedData?.improvedLayout) {
-      legalizeLayout(improvedData.improvedLayout);
-    }
-    
-    res.json(improvedData);
+    // Step 1: Run deterministic geometry/spatial analysis locally
+    const deterministicResult = runDeterministicAnalysis(layout);
+
+    // Step 2: Use Gemini to explain the results in human-readable terms
+    const finalResult = await explainAnalysisResult(deterministicResult);
+
+    res.json(finalResult);
   } catch (error: any) {
-    console.error('Error in improveDesign controller:', error);
-    res.status(500).json({ error: 'Failed to improve design' });
+    console.error('Error generating analysis:', error);
+    res.status(500).json({ error: 'Failed to generate environmental analysis.' });
   }
 };

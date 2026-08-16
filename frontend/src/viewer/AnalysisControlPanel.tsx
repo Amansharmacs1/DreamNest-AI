@@ -1,6 +1,6 @@
 import { useAnalysisStore, type HeatmapType } from '@/store/analysisStore';
 import { useLayoutStore } from '@/store/layoutStore';
-import { analyzeLayout } from '@/services/analysisSimulation';
+// Replaced local simulation with backend API call
 import { Button } from '@/components/ui/button';
 import { Sun, Wind, Activity, Zap, Box, X, Play, Wand2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -22,10 +22,21 @@ export default function AnalysisControlPanel() {
   const [showComparison, setShowComparison] = useState(false);
 
   useEffect(() => {
-    if (isAnalysisModeActive && layout) {
-      const result = analyzeLayout(layout as any);
-      setAnalysisResult(result);
-    }
+    const fetchAnalysis = async () => {
+      if (isAnalysisModeActive && layout && !useAnalysisStore.getState().isAnalyzing) {
+        useAnalysisStore.getState().setIsAnalyzing(true);
+        try {
+          const { generateAnalysis } = await import('@/services/api');
+          const result = await generateAnalysis(layout);
+          setAnalysisResult(result);
+        } catch (error) {
+          console.error("Failed to generate analysis:", error);
+        } finally {
+          useAnalysisStore.getState().setIsAnalyzing(false);
+        }
+      }
+    };
+    fetchAnalysis();
   }, [isAnalysisModeActive, layout, setAnalysisResult]);
 
   useEffect(() => {

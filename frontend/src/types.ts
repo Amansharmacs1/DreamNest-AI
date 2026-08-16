@@ -53,6 +53,7 @@ export interface OtherPreferences {
 export interface HomePreferences {
   plot: PlotPreferences;
   building: BuildingPreferences;
+  stairs?: any;
   rooms: RoomPreferences;
   outdoor: OutdoorPreferences;
   preferences: OtherPreferences;
@@ -134,57 +135,70 @@ export interface RoomDimensions {
   costEstimate?: CostEstimate;
 }
 
+export interface FloorPlan {
+  floor: number;
+  rooms: RoomDimensions[];
+  stairs?: any[];
+  doors?: any[];
+  windows?: any[];
+}
+
+export interface DesignScore {
+  overall: number;
+  spaceEfficiency: number;
+  circulation: number;
+  lighting: number;
+  ventilation: number;
+  privacy: number;
+}
+
+export interface DesignMetadata {
+  source: 'gemini' | 'deterministic';
+  confidence: number;
+  reasoning: string[];
+  validated: boolean;
+  score?: DesignScore;
+  explanation?: string;
+  variantName?: string;
+}
+
 export interface GeneratedLayout {
   plotDimensions: { width: number; length: number; unit: string };
   usableArea: { width: number; length: number; startX: number; startY: number };
   rooms: RoomDimensions[];
+  floors?: FloorPlan[];
+  metadata?: DesignMetadata;
 }
 
-export interface SunlightAnalysis {
-  score: number;
-  rooms: { roomId: string; sunlightHours: number; score: number }[];
-}
-
-export interface VentilationAnalysis {
-  score: number;
-  rooms: { roomId: string; crossVentilation: boolean; score: number }[];
-}
-
-export interface AccessibilityAnalysis {
-  score: number;
-  issues: { roomId: string; issue: string; severity: 'low' | 'medium' | 'high' }[];
-}
-
-export interface EnergyAnalysis {
-  score: number;
-  solarPotential: {
-    roofArea: number;
-    panelCount: number;
-    estimatedMonthlyGeneration: number;
-  };
-}
-
-export interface SpaceUtilization {
-  totalPlotArea: number;
-  builtUpArea: number;
-  usableArea: number;
-  circulationArea: number;
-  wastedArea: number;
-}
-
-export interface AIImprovementSuggestion {
-  id: string;
+export interface AnalysisIssue {
+  severity: 'High' | 'Medium' | 'Low';
+  category: 'Lighting' | 'Ventilation' | 'Circulation' | 'Privacy' | 'Accessibility' | 'Space' | 'Parking' | 'Energy' | 'Safety';
   description: string;
-  type: 'lighting' | 'ventilation' | 'space' | 'general';
-  suggestedChanges: any;
+  recommendation: string;
+}
+
+export interface MetricCategory {
+  score: number;
+  status: 'excellent' | 'good' | 'moderate' | 'tight' | 'limited' | 'needs_attention';
+  metrics?: any;
+  rooms?: any[];
+  issues?: AnalysisIssue[];
+  recommendations?: string[];
 }
 
 export interface AnalysisResult {
-  sunlight: SunlightAnalysis;
-  ventilation: VentilationAnalysis;
-  accessibility: AccessibilityAnalysis;
-  energy: EnergyAnalysis;
-  spaceUtilization: SpaceUtilization;
-  aiSuggestions: AIImprovementSuggestion[];
   overallScore: number;
+  spaceEfficiency: MetricCategory;
+  naturalLighting: MetricCategory;
+  ventilation: MetricCategory;
+  circulation: MetricCategory;
+  privacy: MetricCategory;
+  accessibility: MetricCategory;
+  energyEfficiency: MetricCategory;
+  parking: MetricCategory;
+  outdoorSpace: MetricCategory;
+  staircase: MetricCategory;
+  issues: AnalysisIssue[];
+  recommendations: string[];
+  explanation?: string; // Gemini explanation of the overall score
 }

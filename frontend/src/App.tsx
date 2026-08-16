@@ -5,6 +5,7 @@ import WizardPage from '@/pages/WizardPage';
 import FloorPlanViewer from '@/viewer/FloorPlanViewer';
 import AboutPage from '@/pages/AboutPage';
 import DashboardPage from '@/pages/DashboardPage';
+import SharePage from '@/pages/SharePage';
 
 import AIChatPanel from '@/components/ai/AIChatPanel';
 
@@ -21,6 +22,7 @@ function AppContent() {
         <Route path="/viewer" element={<FloorPlanViewer />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/share/:shareId" element={<SharePage />} />
       </Routes>
       {!isTeaserPage && <AIChatPanel />}
     </>

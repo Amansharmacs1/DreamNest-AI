@@ -1,14 +1,13 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCcw, Undo, Redo, Home, Activity } from 'lucide-react';
+import { Download, RefreshCcw, Undo, Redo, Home, Activity, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useThreeStore } from '@/store/threeStore';
-import { useAuthStore } from '@/store/authStore';
 import { useAnalysisStore } from '@/store/analysisStore';
-import { useCloudProjectStore } from '@/store/cloudProjectStore';
+import { useProjectStore } from '@/store/projectStore';
+import { useWizardStore } from '@/store/wizardStore';
 import jsPDF from 'jspdf';
-import AuthModal from '@/components/auth/AuthModal';
 import OptimizationPanel from './OptimizationPanel';
 import OptimizationComparisonOverlay from './OptimizationComparisonOverlay';
 import ConstructionWorkspace from './ConstructionWorkspace';
@@ -25,6 +24,9 @@ import SmartReportModal from '../components/ai/SmartReportModal';
 import AnalysisControlPanel from './AnalysisControlPanel';
 import RoomAnalysisPanel from './RoomAnalysisPanel';
 import HeatmapOverlay from './HeatmapOverlay'; // 2D heatmap overlay
+import AIDesignInsights from './AIDesignInsights'; // Phase 3 AI Insights
+import SaveProjectModal from '../components/projects/SaveProjectModal';
+import ShareProjectModal from '../components/projects/ShareProjectModal';
 
 export default function FloorPlanViewer() {
   const { layout, undo, redo, history, future, reset } = useLayoutStore();
@@ -40,11 +42,28 @@ export default function FloorPlanViewer() {
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const [activeFloor, setActiveFloor] = useState(0);
   const [isReportOpen, setIsReportOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
-  const { isAuthenticated } = useAuthStore();
-  const { currentProjectId } = useCloudProjectStore();
+  const { currentProjectId, saveCurrentProject, syncStatus } = useProjectStore();
+  const { preferences } = useWizardStore();
   const { isConstructionModeActive, setConstructionMode } = useConstructionStore();
+
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Autosave Effect
+  useEffect(() => {
+    if (!currentProjectId || !layout) return;
+    
+    const timer = setTimeout(() => {
+      saveCurrentProject({
+        layout,
+        preferences: preferences as any,
+        analysis: useAnalysisStore.getState().analysisResult
+      });
+    }, 3000); // 3 second debounce
+    
+    return () => clearTimeout(timer);
+  }, [layout, currentProjectId, saveCurrentProject, preferences]);
 
   if (!layout) {
     return (
@@ -208,8 +227,11 @@ export default function FloorPlanViewer() {
           <Button variant="outline" size="sm" onClick={reset}>
             <RefreshCcw className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Reset</span>
           </Button>
-          <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setIsReportOpen(true)}>
-            <Sparkles className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Smart Report</span>
+          <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => navigate('/wizard')}>
+            <Sparkles className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Regenerate Design</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setIsReportOpen(true)}>
+            <Info className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Smart Report</span>
           </Button>
           <Button variant={viewMode === '3d' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode(v => v === '2d' ? '3d' : '2d')}>
             <Box className="w-4 h-4 mr-1 md:mr-2" /> {viewMode === '2d' ? 'View 3D' : 'View 2D'}
@@ -217,21 +239,22 @@ export default function FloorPlanViewer() {
 
           {/* Auth & Cloud Controls */}
           <div className="flex items-center gap-2 mt-4 md:mt-0">
-          <Button variant="outline" size="sm" onClick={() => setConstructionMode(!isConstructionModeActive)} className={isConstructionModeActive ? 'bg-amber-100 text-amber-900 border-amber-300' : ''}>
-            <Activity className="w-4 h-4 mr-2" /> Construction Mode
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setAnalysisMode(!isAnalysisModeActive)} className={isAnalysisModeActive ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : ''}>
-            <Activity className="w-4 h-4 mr-2" /> Analysis Mode
-          </Button>
-          {isAuthenticated ? (
+            <Button variant="outline" size="sm" onClick={() => setConstructionMode(!isConstructionModeActive)} className={isConstructionModeActive ? 'bg-amber-100 text-amber-900 border-amber-300' : ''}>
+              <Activity className="w-4 h-4 mr-2" /> Construction Mode
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setAnalysisMode(!isAnalysisModeActive)} className={isAnalysisModeActive ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : ''}>
+              <Activity className="w-4 h-4 mr-2" /> Analysis Mode
+            </Button>
+            
+            <Button variant="secondary" size="sm" onClick={() => setIsSaveModalOpen(true)} className="border-green-200 text-green-700 bg-green-50 hover:bg-green-100">
+              {syncStatus === 'saving' ? 'Saving...' : syncStatus === 'saved' ? 'Saved' : 'Save'}
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setIsShareModalOpen(true)} className="border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100">
+              Share
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')} className="border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
-              My Projects
+              My Designs
             </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
-              Sign In
-            </Button>
-          )}
           </div>
           
           <div className="flex gap-2 w-full sm:w-auto justify-center mt-2 sm:mt-0">
@@ -249,6 +272,8 @@ export default function FloorPlanViewer() {
           </div>
         </div>
       </header>
+
+      {viewMode === '2d' && !isAnalysisModeActive && !isConstructionModeActive && <AIDesignInsights />}
 
       {!isAnalysisModeActive && <RoomInspector />}
       {isAnalysisModeActive && (
@@ -358,7 +383,11 @@ export default function FloorPlanViewer() {
         </main>
       )}
       <SmartReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <SaveProjectModal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} onSave={() => {
+        saveCurrentProject({ layout, preferences: preferences as any, analysis: useAnalysisStore.getState().analysisResult });
+        setIsSaveModalOpen(false);
+      }} />
+      <ShareProjectModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} />
       
       {/* Optimization Interfaces */}
       {!isAnalysisModeActive && !isConstructionModeActive && viewMode === '2d' && <OptimizationPanel />}

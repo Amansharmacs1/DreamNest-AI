@@ -218,12 +218,12 @@ export const generateDeterministicLayout = (preferences: HomePreferences): Gener
 
     // Solar Panels placed on top rooftop level
     if (preferences.outdoor.solarPanels) {
-      const topFloor = Math.max(0, numFloors - 1);
+      const roofFloor = numFloors; // Place on the roof (above all usable floors)
       rooms.push({
         id: generateId(),
         name: 'Solar Panels',
         category: 'outdoor',
-        floor: topFloor,
+        floor: roofFloor,
         x: usableStartX + 2,
         y: usableStartY + 2,
         width: 12,

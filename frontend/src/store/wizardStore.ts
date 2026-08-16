@@ -61,6 +61,7 @@ export interface WizardState {
   };
   setStep: (step: number) => void;
   updatePreferences: (stepKey: string, data: any) => void;
+  resetWizard: () => void;
 }
 
 const defaultPreferences = {
@@ -85,4 +86,5 @@ export const useWizardStore = create<WizardState>((set) => ({
       }
     }
   })),
+  resetWizard: () => set({ step: 1, preferences: defaultPreferences }),
 }));

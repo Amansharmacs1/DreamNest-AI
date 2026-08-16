@@ -6,14 +6,20 @@ import {
   getProjectById, 
   deleteProject,
   generateShareLink,
-  getSharedProject
+  getSharedProject,
+  createPublicShare,
+  getPublicShare
 } from '../controllers/projectController';
 import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
 // Public routes
-router.get('/shared/:shareToken', getSharedProject);
+router.get('/shared/:shareToken', getSharedProject); // Legacy
+
+// Phase 6: Anonymous Public Sharing
+router.post('/share/create', createPublicShare);
+router.get('/share/:shareId', getPublicShare);
 
 // Protected routes
 router.use(authMiddleware);

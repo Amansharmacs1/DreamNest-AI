@@ -17,9 +17,12 @@ export default function RoomAnalysisPanel() {
   const roomAnalysis = useMemo(() => {
     if (!selectedRoom || !analysisResult) return null;
     return {
-      sunlight: analysisResult.sunlight.rooms.find(r => r.roomId === selectedRoom.id)?.score || 0,
-      ventilation: analysisResult.ventilation.rooms.find(r => r.roomId === selectedRoom.id)?.score || 0,
-      issues: analysisResult.accessibility.issues.filter(i => i.roomId === selectedRoom.id)
+      sunlight: analysisResult.naturalLighting.rooms?.find(r => r.roomId === selectedRoom.id)?.score || 0,
+      ventilation: analysisResult.ventilation.rooms?.find(r => r.roomId === selectedRoom.id)?.score || 0,
+      issues: analysisResult.issues?.filter(i => {
+        // Simple heuristic: if the issue mentions the room name
+        return i.description.toLowerCase().includes(selectedRoom.name.toLowerCase());
+      }) || []
     };
   }, [selectedRoom, analysisResult]);
 
@@ -77,8 +80,7 @@ export default function RoomAnalysisPanel() {
             <ul className="text-xs space-y-1">
               {roomAnalysis.issues.map((issue, idx) => (
                 <li key={idx} className="flex items-start">
-                  <span className="text-red-500 mr-1">•</span>
-                  <span className="text-gray-600">{issue.issue}</span>
+                  <span className="text-gray-600">{issue.description}</span>
                 </li>
               ))}
             </ul>

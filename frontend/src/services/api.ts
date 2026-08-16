@@ -14,3 +14,8 @@ export const generateLayoutAPI = async (preferences: any) => {
   const response = await api.post('/layout/generate', preferences);
   return response.data;
 };
+
+export const generateAnalysis = async (layout: any) => {
+  const response = await api.post('/analysis/generate', layout);
+  return response.data;
+};

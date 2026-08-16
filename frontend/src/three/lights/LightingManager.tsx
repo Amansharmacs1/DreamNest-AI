@@ -4,7 +4,14 @@ import { useAnalysisStore } from '@/store/analysisStore';
 import { useRef } from 'react';
 import { DirectionalLight } from 'three';
 import { calculateSunPosition } from '../utils/sunUtils';
-import { getSunPosition } from '@/services/analysisSimulation';
+// Simple mock for sun position
+function getSunPosition(_date: Date, _latitude: number, _longitude: number, timeOfDayMinutes: number) {
+  const hours = timeOfDayMinutes / 60;
+  const hourAngle = 15 * (hours - 12);
+  const azimuth = (180 + hourAngle) * (Math.PI / 180);
+  const altitude = (90 - Math.abs(hours - 12) * 15) * (Math.PI / 180);
+  return { azimuth, altitude: Math.max(0, altitude) };
+}
 
 export default function LightingManager() {
   const timeOfDay = useThreeStore((state) => state.timeOfDay);

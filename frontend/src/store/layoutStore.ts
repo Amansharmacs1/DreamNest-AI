@@ -1,34 +1,15 @@
 import { create } from 'zustand';
 
-interface Room {
-  id: string;
-  name: string;
-  category: string;
-  floor: number;
-  x: number;
-  y: number;
-  width: number;
-  length: number;
-  furniture?: any[];
-  lighting?: any[];
-  decorations?: any[];
-  materials?: { floor: string; wall: string };
-  designNotes?: string;
-  costEstimate?: { furniture: number; materials: number; decorations: number; total: number; currency: string };
-}
+import type { GeneratedLayout, RoomDimensions } from '../types';
 
 export interface LayoutState {
-  layout: {
-    plotDimensions: { width: number; length: number; unit: string };
-    usableArea: { width: number; length: number; startX: number; startY: number };
-    rooms: Room[];
-  } | null;
+  layout: GeneratedLayout | null;
   history: any[]; // For undo
   future: any[]; // For redo
   selectedRoomId: string | null;
   setLayout: (layout: any) => void;
   setSelectedRoom: (id: string | null) => void;
-  updateRoom: (id: string, updates: Partial<Room>) => void;
+  updateRoom: (id: string, updates: Partial<RoomDimensions>) => void;
   undo: () => void;
   redo: () => void;
   reset: () => void;

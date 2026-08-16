@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Project } from '../models/Project';
+import { SharedProject } from '../models/SharedProject';
 import crypto from 'crypto';
 
 export const getProjects = async (req: Request, res: Response): Promise<void> => {
@@ -126,5 +127,52 @@ export const getSharedProject = async (req: Request, res: Response): Promise<voi
   } catch (error) {
     console.error('Error fetching shared project:', error);
     res.status(500).json({ error: 'Failed to fetch shared project' });
+  }
+};
+
+// Phase 6: Anonymous Public Sharing
+export const createPublicShare = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, preferences, layout, interior, analysis, thumbnail } = req.body;
+    
+    // Generate secure unpredictable ID (e.g., 8 bytes hex = 16 characters)
+    const shareId = crypto.randomBytes(8).toString('hex');
+    const creatorToken = crypto.randomBytes(16).toString('hex'); // For future deletion
+
+    const newSharedProject = new SharedProject({
+      shareId,
+      name: name || 'Untitled Design',
+      preferences,
+      layout,
+      interior,
+      analysis,
+      thumbnail,
+      creatorToken
+    });
+
+    await newSharedProject.save();
+
+    res.status(201).json({ shareId, creatorToken });
+  } catch (error) {
+    console.error('Error creating public share:', error);
+    res.status(500).json({ error: 'Failed to create public share' });
+  }
+};
+
+export const getPublicShare = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { shareId } = req.params;
+    
+    const sharedProject = await SharedProject.findOne({ shareId });
+
+    if (!sharedProject) {
+      res.status(404).json({ error: 'Shared design not found' });
+      return;
+    }
+
+    res.json(sharedProject);
+  } catch (error) {
+    console.error('Error fetching public share:', error);
+    res.status(500).json({ error: 'Failed to fetch shared design' });
   }
 };
