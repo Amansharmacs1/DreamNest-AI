@@ -1,6 +1,7 @@
 import { scoreDesign, OptimizationWeights } from './DesignScoringEngine';
 import { analyzeDesignWithGemini, RoomConstraint } from './geminiDesignCriticService';
 import { legalizeLayout } from '../algorithms/aiLayoutEngine';
+import { validateOptimizationCandidate } from '../algorithms/optimizationValidationEngine';
 
 export interface OptimizationCandidate {
   id: string;
@@ -8,6 +9,7 @@ export interface OptimizationCandidate {
   layout: any;
   score: number;
   scores: any;
+  baseScores?: any;
   explanation: string;
 }
 
@@ -16,6 +18,7 @@ export const runParetoOptimization = async (
   weights: OptimizationWeights,
   constraints: RoomConstraint[],
   prompt: string,
+  mode: string,
   onProgress?: (message: string) => void
 ): Promise<OptimizationCandidate[]> => {
   
@@ -40,7 +43,7 @@ export const runParetoOptimization = async (
     if (onProgress) onProgress(`Consulting AI architect for ${variant.name}...`);
     
     try {
-      const criticResponse = await analyzeDesignWithGemini(baseLayout, variant.w, constraints, prompt);
+      const criticResponse = await analyzeDesignWithGemini(baseLayout, variant.w, constraints, prompt, mode);
       
       if (onProgress) onProgress(`Applying modifications for ${variant.name}...`);
       
@@ -61,15 +64,29 @@ export const runParetoOptimization = async (
         } else if (op.operation === 'move_room') {
           if (op.x !== undefined) room.x = op.x;
           if (op.y !== undefined) room.y = op.y;
+        } else if (op.operation === 'move_furniture' && mode !== 'architecture') {
+           // Not fully implemented on gemini side but safe to leave stubbed for later iteration
         }
       });
 
       if (onProgress) onProgress(`Validating geometry for ${variant.name}...`);
       
-      // Deterministic validation: ensures no overlap, stays inside boundaries
-      legalizeLayout(candidateLayout);
+      if (mode === 'architecture' || mode === 'both') {
+        legalizeLayout(candidateLayout);
+      }
+
+      // Check against hard constraints
+      const validationResult = validateOptimizationCandidate(baseLayout, candidateLayout, constraints);
+      if (!validationResult.valid) {
+        throw new Error(`Candidate rejected: ${validationResult.reason}`);
+      }
 
       const newScores = scoreDesign(candidateLayout, variant.w);
+      const baseScoresVariant = scoreDesign(baseLayout, variant.w);
+
+      if (newScores.overall <= baseScoresVariant.overall) {
+        throw new Error(`Score (${newScores.overall}) did not improve over base (${baseScoresVariant.overall})`);
+      }
 
       const explanation = criticResponse.issues.map(i => i.description).join(' ') || 
         'Optimized room placements and dimensions to better fit the targeted constraints.';
@@ -80,12 +97,25 @@ export const runParetoOptimization = async (
         layout: candidateLayout,
         score: newScores.overall,
         scores: newScores,
+        baseScores: baseScoresVariant,
         explanation
       });
 
-    } catch (e) {
-      console.warn(`Variant ${variant.name} generation failed`, e);
+    } catch (e: any) {
+      console.warn(`Variant ${variant.name} generation failed`, e.message);
     }
+  }
+
+  if (candidates.length === 0) {
+    if (onProgress) onProgress('All variants rejected by constraints. Keeping original design.');
+    candidates.push({
+      id: `opt_baseline_${Date.now()}`,
+      name: 'Original Design (Fallback)',
+      layout: baseLayout,
+      score: baseScores.overall,
+      scores: baseScores,
+      explanation: 'No viable improvements could be found that respect all constraints. Returning the original design.'
+    });
   }
 
   if (onProgress) onProgress('Optimization complete.');

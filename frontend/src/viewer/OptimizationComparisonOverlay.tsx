@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLayoutStore } from '@/store/layoutStore';
+import { useProjectStore } from '@/store/projectStore';
+import { ProjectStorageService } from '@/services/projectStorage';
 import { Button } from '@/components/ui/button';
-import { X, CheckCircle2, ChevronRight, BarChart2, Lightbulb } from 'lucide-react';
+import { X, CheckCircle2, ChevronRight, BarChart2, Lightbulb, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import RoomElement from '@/viewer/RoomElement';
 
 interface Candidate {
   id: string;
@@ -10,13 +13,17 @@ interface Candidate {
   layout: any;
   score: number;
   scores: any;
+  baseScores?: any;
   explanation: string;
 }
 
 export default function OptimizationComparisonOverlay() {
   const { layout, setLayout } = useLayoutStore();
+  const { currentProjectId, saveCurrentProject } = useProjectStore();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
+  const [show2D, setShow2D] = useState(false);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const handleOptimizationComplete = (e: any) => {
@@ -32,8 +39,15 @@ export default function OptimizationComparisonOverlay() {
 
   const currentCandidate = candidates[selectedIdx];
 
-  const handleApply = () => {
+  const handleApply = async () => {
+    if (currentProjectId) {
+      // Save original as a version before overwriting
+      await ProjectStorageService.saveVersion(currentProjectId, 'Before AI Optimization');
+    }
     setLayout(currentCandidate.layout);
+    if (currentProjectId) {
+      await saveCurrentProject({ layout: currentCandidate.layout });
+    }
     setCandidates([]);
   };
 
@@ -82,24 +96,70 @@ export default function OptimizationComparisonOverlay() {
 
           {/* Main Content Area */}
           <div className="flex-1 bg-white p-6 overflow-y-auto">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">{currentCandidate.name}</h2>
-            <p className="text-slate-600 text-sm leading-relaxed mb-6 bg-slate-50 p-4 rounded-lg border border-slate-100">
-              {currentCandidate.explanation}
-            </p>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">{currentCandidate.name}</h2>
+                <p className="text-slate-600 text-sm leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">
+                  {currentCandidate.explanation}
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="ml-4 flex-shrink-0"
+                onClick={() => setShow2D(!show2D)}
+              >
+                <Map className="w-4 h-4 mr-2" /> {show2D ? 'Hide 2D Preview' : 'Show 2D Preview'}
+              </Button>
+            </div>
+
+            {show2D && (
+              <div className="mb-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider text-center">2D Preview</h3>
+                <div className="flex justify-center w-full h-64 overflow-hidden relative" style={{ backgroundImage: 'radial-gradient(#ccc 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+                  <svg 
+                    ref={svgRef}
+                    width="100%" 
+                    height="100%" 
+                    viewBox={`0 0 ${currentCandidate.layout.plotDimensions.width} ${currentCandidate.layout.plotDimensions.length}`}
+                  >
+                    <rect 
+                      width={currentCandidate.layout.plotDimensions.width} 
+                      height={currentCandidate.layout.plotDimensions.length} 
+                      fill="none" 
+                      stroke="#94a3b8" 
+                      strokeWidth="0.5" 
+                      strokeDasharray="2,2" 
+                    />
+                    {currentCandidate.layout.rooms.filter((r: any) => r.floor === 0).map((room: any) => (
+                      <RoomElement key={room.id} room={room} />
+                    ))}
+                  </svg>
+                </div>
+              </div>
+            )}
 
             <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Metrics Breakdown</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-              {Object.entries(currentCandidate.scores).filter(([k]) => k !== 'overall').map(([key, value]) => (
+              {Object.entries(currentCandidate.scores).filter(([k]) => k !== 'overall').map(([key, value]) => {
+                const oldVal = currentCandidate.baseScores ? currentCandidate.baseScores[key] : value;
+                const diff = (value as number) - (oldVal as number);
+                return (
                 <div key={key} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <div className="text-xs text-slate-500 capitalize mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                  <div className="flex justify-between items-center mb-1">
+                     <span className="text-xs font-bold text-slate-500 line-through">{String(oldVal)}</span>
+                     <ChevronRight className="w-3 h-3 text-indigo-400 mx-1" />
+                     <span className={`text-sm font-bold ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-slate-700'}`}>
+                        {String(value)}
+                     </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-slate-200 h-2 rounded-full overflow-hidden">
                       <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${value}%` }} />
                     </div>
-                    <span className="text-sm font-bold text-slate-700 w-8 text-right">{String(value)}</span>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
 
             <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Modified Rooms</h3>

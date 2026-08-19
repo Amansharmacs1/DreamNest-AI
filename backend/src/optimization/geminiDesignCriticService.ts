@@ -12,7 +12,8 @@ export const analyzeDesignWithGemini = async (
   layout: any, 
   weights: OptimizationWeights,
   constraints: RoomConstraint[],
-  prompt: string = ''
+  prompt: string = '',
+  mode: string = 'architecture'
 ) => {
   const systemPrompt = `You are an expert AI Architectural Critic and Optimization Engine.
 You have been given a floor plan layout in JSON format, user optimization weights (priorities), and constraints (which rooms are locked).
@@ -20,13 +21,15 @@ Your goal is to propose concrete, geometric modifications to improve the design 
 
 Current Weights: ${JSON.stringify(weights)}
 Locked Rooms: ${JSON.stringify(constraints.filter(c => c.locked).map(c => c.id))}
+Optimization Mode: ${mode}
 
 Rules:
 1. DO NOT modify locked rooms.
 2. Return ONLY structured operations (resize_room, move_room).
 3. "resize_room" requires roomId, new width, new length.
 4. "move_room" requires roomId, new x, new y.
-5. If the user provided a specific prompt ("Make the kitchen bigger"), prioritize that request over general weights.
+5. If the Optimization Mode is "interior", DO NOT move or resize structural rooms; only optimize furniture layouts if possible (currently simulate by returning no structural changes).
+6. If the user provided a specific prompt ("Make the kitchen bigger"), prioritize that request over general weights.
 
 User Prompt: ${prompt || 'Optimize the design according to the provided weights.'}`;
 

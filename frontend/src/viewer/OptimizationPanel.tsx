@@ -12,6 +12,8 @@ export default function OptimizationPanel() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [progressMessages, setProgressMessages] = useState<string[]>([]);
   const [prompt, setPrompt] = useState('');
+  const [optLevel, setOptLevel] = useState<'quick'|'detailed'>('detailed');
+  const [optMode, setOptMode] = useState<'architecture'|'interior'|'both'>('architecture');
   const [weights, setWeights] = useState({
     spaceEfficiency: 0.2,
     lighting: 0.2,
@@ -46,6 +48,7 @@ export default function OptimizationPanel() {
           layout,
           weights,
           prompt,
+          mode: optMode,
           constraints: lockedRooms.map(id => ({ id, locked: true }))
         }),
       });
@@ -123,37 +126,91 @@ export default function OptimizationPanel() {
 
             <div className="p-4 overflow-y-auto flex-1">
               <div className="space-y-4">
+                
+                {/* Level Toggle */}
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                  <button 
+                    onClick={() => setOptLevel('quick')}
+                    className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-colors ${optLevel === 'quick' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Quick
+                  </button>
+                  <button 
+                    onClick={() => setOptLevel('detailed')}
+                    className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-colors ${optLevel === 'detailed' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Detailed
+                  </button>
+                </div>
+
+                {/* Mode Selection */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">Scope</label>
+                  <select 
+                    value={optMode} 
+                    onChange={e => setOptMode(e.target.value as any)}
+                    className="w-full text-sm p-2 border rounded-md outline-none focus:ring-2 focus:ring-indigo-500"
+                    disabled={isOptimizing}
+                  >
+                    <option value="architecture">Architecture Only (Walls/Rooms)</option>
+                    <option value="interior">Interior Only (Furniture)</option>
+                    <option value="both">Both (Full Redesign)</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">Natural Language Prompt</label>
                   <textarea 
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    placeholder="e.g. Make the kitchen bigger, ensure all bedrooms have windows..."
-                    className="w-full text-sm p-2 border rounded-md resize-none h-20 outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g. Make the kitchen bigger, improve ventilation..."
+                    className="w-full text-sm p-2 border rounded-md resize-none h-16 outline-none focus:ring-2 focus:ring-indigo-500"
                     disabled={isOptimizing}
                   />
                 </div>
 
-                <div className="border-t pt-4">
-                  <label className="text-xs font-semibold text-gray-600 uppercase mb-4 block">Priority Weights</label>
-                  
-                  {Object.entries(weights).map(([key, value]) => (
-                    <div key={key} className="mb-3">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="capitalize text-gray-700">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                        <span className="text-indigo-600 font-medium">{Math.round(value * 100)}%</span>
+                {optLevel === 'detailed' && (
+                  <div className="border-t pt-4">
+                    <label className="text-xs font-semibold text-gray-600 uppercase mb-4 block">Priority Weights</label>
+                    
+                    {Object.entries(weights).map(([key, value]) => (
+                      <div key={key} className="mb-3">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="capitalize text-gray-700">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                          <span className="text-indigo-600 font-medium">{Math.round(value * 100)}%</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="0" max="1" step="0.05"
+                          value={value}
+                          onChange={(e) => handleSliderChange(e, key as keyof typeof weights)}
+                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                          disabled={isOptimizing}
+                        />
                       </div>
-                      <input 
-                        type="range" 
-                        min="0" max="1" step="0.05"
-                        value={value}
-                        onChange={(e) => handleSliderChange(e, key as keyof typeof weights)}
-                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                        disabled={isOptimizing}
-                      />
+                    ))}
+                  </div>
+                )}
+
+                {optLevel === 'quick' && (
+                  <div className="border-t pt-4">
+                    <label className="text-xs font-semibold text-gray-600 uppercase mb-3 block">Quick Presets</label>
+                    <div className="flex flex-col gap-2">
+                      <Button variant="outline" className="justify-start text-sm" onClick={() => {
+                        setWeights({ spaceEfficiency: 0.8, lighting: 0.1, privacy: 0.05, ventilation: 0.05, energy: 0, accessibility: 0 });
+                      }}>Maximize Space</Button>
+                      <Button variant="outline" className="justify-start text-sm" onClick={() => {
+                        setWeights({ spaceEfficiency: 0.1, lighting: 0.6, privacy: 0.0, ventilation: 0.3, energy: 0, accessibility: 0 });
+                      }}>Improve Lighting & Ventilation</Button>
+                      <Button variant="outline" className="justify-start text-sm" onClick={() => {
+                        setWeights({ spaceEfficiency: 0.1, lighting: 0.1, privacy: 0.7, ventilation: 0.1, energy: 0, accessibility: 0 });
+                      }}>Improve Privacy</Button>
+                      <Button variant="outline" className="justify-start text-sm" onClick={() => {
+                        setWeights({ spaceEfficiency: 0.2, lighting: 0.2, privacy: 0.2, ventilation: 0.15, energy: 0.15, accessibility: 0.1 });
+                      }}>Balanced Overview</Button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
 
                 {lockedRooms.length > 0 && (
                   <div className="border-t pt-4">

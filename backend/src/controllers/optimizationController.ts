@@ -9,7 +9,7 @@ export const optimizeDesignStream = async (req: Request, res: Response): Promise
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  const { layout, weights, constraints, prompt } = req.body;
+  const { layout, weights, constraints, prompt, mode } = req.body;
 
   if (!layout || !weights) {
     res.write(`data: ${JSON.stringify({ error: 'Missing layout or weights' })}\n\n`);
@@ -27,6 +27,7 @@ export const optimizeDesignStream = async (req: Request, res: Response): Promise
       weights as OptimizationWeights,
       (constraints || []) as RoomConstraint[],
       prompt || '',
+      mode || 'architecture',
       sendProgress
     );
 
