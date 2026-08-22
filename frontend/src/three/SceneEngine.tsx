@@ -8,9 +8,11 @@ import { useThreeStore } from '@/store/threeStore';
 import { useWizardStore } from '@/store/wizardStore';
 import { calculateSunPosition } from './utils/sunUtils';
 import GLTFExporterComponent from './helpers/GLTFExporterComponent';
+import ScreenshotHelper from './helpers/ScreenshotHelper';
 
 export default function SceneEngine() {
   const timeOfDay = useThreeStore((state) => state.timeOfDay);
+  const quality = useThreeStore((state) => state.quality);
   const facingDirection = useWizardStore((state) => state.preferences.plot.facingDirection);
 
   const getSkyTurbidityAndRayleigh = () => {
@@ -25,9 +27,11 @@ export default function SceneEngine() {
   const { turbidity, rayleigh } = getSkyTurbidityAndRayleigh() || { turbidity: 2, rayleigh: 0.5 };
   const sunPosition = calculateSunPosition(timeOfDay, facingDirection);
 
+  const dpr = quality === 'low' ? 0.75 : quality === 'medium' ? 1 : 1.5;
+
   return (
     <div id="canvas-container" className="w-full h-full relative cursor-crosshair">
-      <Canvas shadows camera={{ position: [20, 40, 60], fov: 60 }}>
+      <Canvas shadows camera={{ position: [20, 40, 60], fov: 60 }} dpr={dpr} gl={{ preserveDrawingBuffer: true }}>
         <color attach="background" args={['#87CEEB']} />
         
         {/* Environment & Sky */}
@@ -47,8 +51,9 @@ export default function SceneEngine() {
           
           {/* Ambient environment reflections */}
           <Environment preset={timeOfDay === 'night' ? 'night' : 'city'} />
-          
+          {/* Exporters / Helpers */}
           <GLTFExporterComponent />
+          <ScreenshotHelper />
         </Suspense>
       </Canvas>
       

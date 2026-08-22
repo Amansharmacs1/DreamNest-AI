@@ -20,6 +20,8 @@ export default function LightingManager() {
   
   const { isAnalysisModeActive, latitude, longitude, date, timeOfDayMinutes, plotOrientation } = useAnalysisStore();
   
+  const quality = useThreeStore((state) => state.quality);
+  
   const dirLightRef = useRef<DirectionalLight>(null);
 
   const getLightConfig = () => {
@@ -40,7 +42,6 @@ export default function LightingManager() {
   let sunPos: [number, number, number];
   
   if (isAnalysisModeActive) {
-    // Use precise solar simulation
     const { altitude, azimuth } = getSunPosition(date, latitude, longitude, timeOfDayMinutes);
     const distance = 100;
     const finalAzimuth = azimuth + (plotOrientation * Math.PI / 180);
@@ -49,27 +50,26 @@ export default function LightingManager() {
     const z = distance * Math.cos(altitude) * Math.cos(finalAzimuth);
     sunPos = [x, y, z];
   } else {
-    // Use simple timeOfDay from store
     sunPos = calculateSunPosition(timeOfDay, facingDirection);
   }
 
+  const shadowMapSize = quality === 'low' ? 512 : quality === 'medium' ? 1024 : 2048;
+
   return (
     <>
-      {/* Global Illumination Approximation */}
       <hemisphereLight 
         intensity={config.ambientIntensity * 1.5} 
         color={config.ambientColor} 
-        groundColor={timeOfDay === 'night' ? '#111111' : '#4a7c36'} // green bounce from grass
+        groundColor={timeOfDay === 'night' ? '#111111' : '#4a7c36'}
       />
       
-      {/* Sun / Moon Light */}
       <directionalLight
         ref={dirLightRef}
-        castShadow={showShadows}
+        castShadow={showShadows && quality !== 'low'}
         position={sunPos}
         intensity={config.directionalIntensity}
         color={config.directionalColor}
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[shadowMapSize, shadowMapSize]}
         shadow-camera-left={-80}
         shadow-camera-right={80}
         shadow-camera-top={80}

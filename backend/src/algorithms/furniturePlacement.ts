@@ -17,10 +17,11 @@ export function placeFurniture(room: RoomDimensions, furnitureItems: any[]): Fur
   const centerX = room.width / 2;
   const centerY = room.length / 2;
 
-  let wallOffsetTop = 1;
-  let wallOffsetBottom = room.length - 1;
-  let wallOffsetLeft = 1;
-  let wallOffsetRight = room.width - 1;
+  // X tracks along top/bottom wall, Y tracks along left/right wall
+  let wallOffsetTopX = 1;
+  let wallOffsetBottomX = 1;
+  let wallOffsetLeftY = 1;
+  let wallOffsetRightY = 1;
 
   for (const item of furnitureItems) {
     let x = centerX;
@@ -29,23 +30,32 @@ export function placeFurniture(room: RoomDimensions, furnitureItems: any[]): Fur
 
     const lowerType = item.type.toLowerCase();
 
-    if (lowerType.includes('bed') || lowerType.includes('sofa') || lowerType.includes('tv') || lowerType.includes('wardrobe')) {
+    if (lowerType.includes('bed') || lowerType.includes('sofa') || lowerType.includes('tv') || lowerType.includes('wardrobe') || lowerType.includes('cabinet') || lowerType.includes('counter')) {
       // Place against a wall
-      if (wallOffsetTop < room.length / 2) {
-        x = centerX;
-        y = wallOffsetTop + (item.length / 2);
+      if (wallOffsetTopX + item.width < room.width) {
+        // Top Wall (Y = 0)
+        x = wallOffsetTopX + (item.width / 2);
+        y = 0.5 + (item.length / 2);
         rotation = 0;
-        wallOffsetTop += item.length + 1; // space for next
-      } else if (wallOffsetBottom > room.length / 2) {
-        x = centerX;
-        y = wallOffsetBottom - (item.length / 2);
-        rotation = Math.PI; // Face opposite
-        wallOffsetBottom -= item.length + 1;
-      } else if (wallOffsetLeft < room.width / 2) {
-        x = wallOffsetLeft + (item.width / 2);
-        y = centerY;
+        wallOffsetTopX += item.width + 1;
+      } else if (wallOffsetLeftY + item.width < room.length) {
+        // Left Wall (X = 0), rotated -90 degrees
+        x = 0.5 + (item.length / 2);
+        y = wallOffsetLeftY + (item.width / 2);
         rotation = -Math.PI / 2;
-        wallOffsetLeft += item.width + 1;
+        wallOffsetLeftY += item.width + 1;
+      } else if (wallOffsetRightY + item.width < room.length) {
+        // Right Wall (X = room.width), rotated 90 degrees
+        x = room.width - 0.5 - (item.length / 2);
+        y = wallOffsetRightY + (item.width / 2);
+        rotation = Math.PI / 2;
+        wallOffsetRightY += item.width + 1;
+      } else if (wallOffsetBottomX + item.width < room.width) {
+        // Bottom Wall (Y = room.length), rotated 180 degrees
+        x = wallOffsetBottomX + (item.width / 2);
+        y = room.length - 0.5 - (item.length / 2);
+        rotation = Math.PI;
+        wallOffsetBottomX += item.width + 1;
       } else {
         // Fallback to center
         x = centerX;
@@ -53,7 +63,7 @@ export function placeFurniture(room: RoomDimensions, furnitureItems: any[]): Fur
       }
     } else {
       // Center items like coffee tables, dining tables, rugs
-      x = centerX + (Math.random() * 2 - 1); // slight jitter to avoid exact overlap if multiple
+      x = centerX + (Math.random() * 2 - 1);
       y = centerY + (Math.random() * 2 - 1);
     }
 

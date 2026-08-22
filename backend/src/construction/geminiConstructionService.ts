@@ -49,7 +49,7 @@ User Budget: ${userBudget || 'Not specified'}`;
 
     return object;
   } catch (error) {
-    console.error('Gemini Construction Critic Error:', error);
-    throw new Error('Failed to analyze construction budget with Gemini');
+    console.error('AI Construction Critic Error:', error);
+    throw new Error('Failed to analyze construction budget with AI');
   }
 };

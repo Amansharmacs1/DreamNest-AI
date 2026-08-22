@@ -58,7 +58,7 @@ User Prompt: ${prompt || 'Optimize the design according to the provided weights.
 
     return object;
   } catch (error) {
-    console.error('Gemini Critic Error:', error);
-    throw new Error('Failed to analyze design with Gemini');
+    console.error('AI Critic Error:', error);
+    throw new Error('Failed to analyze design with AI');
   }
 };

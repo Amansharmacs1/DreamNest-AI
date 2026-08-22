@@ -6,6 +6,10 @@ import * as THREE from 'three';
 
 export default function CameraController() {
   const cameraMode = useThreeStore((state) => state.cameraMode);
+  const cinematicMode = useThreeStore((state) => state.cinematicMode);
+  const targetCameraPosition = useThreeStore((state) => state.targetCameraPosition);
+  const setTargetCameraPosition = useThreeStore((state) => state.setTargetCameraPosition);
+  
   const { camera, scene } = useThree();
   const controlsRef = useRef<any>(null);
   
@@ -21,6 +25,7 @@ export default function CameraController() {
   const lastRaycastTime = useRef(0);
   const cachedFloorY = useRef(0);
   const canMoveForward = useRef(true);
+  const cinematicTime = useRef(0);
 
   // WASD Movement State
   const [movement, setMovement] = useState({
@@ -60,27 +65,66 @@ export default function CameraController() {
 
   // Adjust camera position when switching modes
   useEffect(() => {
-    // Ensure the camera can see layer 0 (default), 1 (floors/stairs), and 2 (walls)
     camera.layers.enable(0);
     camera.layers.enable(1);
     camera.layers.enable(2);
     
     if (cameraMode === 'first-person') {
-      // Set to eye level (assuming 1 unit = 1 foot, eye level = 5.5 ft)
       camera.position.set(0, 5.5, 0);
       camera.lookAt(0, 5.5, 1);
-    } else {
-      // Orbit overview
+    } else if (!cinematicMode && !targetCameraPosition) {
       camera.position.set(20, 40, 60);
       camera.lookAt(0, 0, 0);
     }
-  }, [cameraMode, camera]);
+  }, [cameraMode, camera, cinematicMode, targetCameraPosition]);
 
   useFrame((_, delta) => {
+    // 1. Cinematic Mode (Smooth Auto-Orbit)
+    if (cinematicMode) {
+      cinematicTime.current += delta * 0.1;
+      const radius = 60;
+      const x = Math.cos(cinematicTime.current) * radius;
+      const z = Math.sin(cinematicTime.current) * radius;
+      
+      camera.position.lerp(new THREE.Vector3(x, 30, z), delta * 2);
+      camera.lookAt(0, 5, 0);
+      
+      if (controlsRef.current && controlsRef.current.update) {
+        controlsRef.current.update();
+      }
+      return; // Skip other camera controls
+    }
+
+    // 2. Room Teleportation (Lerp to target)
+    if (targetCameraPosition) {
+      const target = new THREE.Vector3(...targetCameraPosition);
+      // Offset Y to be eye-level if in first person, or high up if in orbit
+      if (cameraMode === 'first-person') {
+        target.y += 5.5; 
+      } else {
+        target.y += 30;
+        target.z += 20; // pull back slightly
+      }
+
+      camera.position.lerp(target, delta * 4);
+      if (cameraMode === 'orbit') {
+        if (controlsRef.current && controlsRef.current.target) {
+          controlsRef.current.target.lerp(new THREE.Vector3(targetCameraPosition[0], 0, targetCameraPosition[2]), delta * 4);
+          controlsRef.current.update();
+        }
+      }
+
+      // Once close enough, release the target
+      if (camera.position.distanceTo(target) < 1.0) {
+        setTargetCameraPosition(null);
+      }
+      return;
+    }
+
+    // 3. First-Person WASD Movement
     if (cameraMode === 'first-person' && controlsRef.current?.isLocked) {
       const speed = 15 * delta;
       
-      // Calculate movement vector relative to camera rotation
       const direction = new THREE.Vector3();
       const right = new THREE.Vector3();
       
@@ -103,16 +147,13 @@ export default function CameraController() {
         moveDir.normalize();
 
         const now = performance.now();
-        // Throttle heavy raycasts to every 100ms (10fps for physics is enough)
         if (now - lastRaycastTime.current > 100) {
-          // 1. WALL COLLISION
           wallRaycaster.current.set(camera.position, moveDir);
           const wallHits = wallRaycaster.current.intersectObjects(scene.children, true).filter(
             hit => hit.object.type === 'Mesh' && !hit.object.name.includes('Helper')
           );
           canMoveForward.current = wallHits.length === 0 || wallHits[0].distance > 2;
 
-          // 2. FLOOR DETECTION
           floorRaycaster.current.set(
             new THREE.Vector3(camera.position.x, camera.position.y + 5, camera.position.z), 
             downVector
@@ -127,13 +168,11 @@ export default function CameraController() {
           lastRaycastTime.current = now;
         }
 
-        // Only move if we aren't about to hit a wall
         if (canMoveForward.current) {
           controlsRef.current.moveForward(-direction.z * speed);
           controlsRef.current.moveRight(right.x * speed);
         }
         
-        // Smooth interpolation for stairs/floor based on cached target
         const targetY = cachedFloorY.current + 5.5;
         camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 15 * delta);
       }
@@ -156,6 +195,7 @@ export default function CameraController() {
       minDistance={10} 
       maxDistance={200}
       maxPolarAngle={Math.PI / 2 - 0.05} // Prevent going below ground
+      enabled={!cinematicMode && !targetCameraPosition}
     />
   );
 }

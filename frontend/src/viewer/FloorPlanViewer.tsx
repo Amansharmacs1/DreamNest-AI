@@ -31,6 +31,7 @@ import ShareProjectModal from '../components/projects/ShareProjectModal';
 export default function FloorPlanViewer() {
   const { layout, undo, redo, history, future, reset } = useLayoutStore();
   const triggerExportGLTF = useThreeStore((state) => state.triggerExportGLTF);
+  const presentationMode = useThreeStore((state) => state.presentationMode);
   const { isAnalysisModeActive, setAnalysisMode } = useAnalysisStore();
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
@@ -185,6 +186,7 @@ export default function FloorPlanViewer() {
 
   return (
     <div className="flex flex-col h-screen bg-background relative overflow-hidden">
+      {!presentationMode && (
       <header className="flex flex-col md:flex-row items-center justify-between p-4 bg-white border-b shadow-sm z-20 gap-4 relative">
         <div className="flex items-center justify-between w-full md:w-auto">
           <div className="flex items-center gap-4">
@@ -272,11 +274,12 @@ export default function FloorPlanViewer() {
           </div>
         </div>
       </header>
+      )}
 
       {viewMode === '2d' && !isAnalysisModeActive && !isConstructionModeActive && <AIDesignInsights />}
 
-      {!isAnalysisModeActive && <RoomInspector />}
-      {isAnalysisModeActive && (
+      {!isAnalysisModeActive && !presentationMode && <RoomInspector />}
+      {isAnalysisModeActive && !presentationMode && (
         <>
           <AnalysisControlPanel />
           <RoomAnalysisPanel />
@@ -377,9 +380,9 @@ export default function FloorPlanViewer() {
         <main className="flex-1 relative overflow-hidden bg-black z-0">
           <SceneEngine />
           {!isAnalysisModeActive && <ControlPanel />}
-          <Minimap />
-          <FirstPersonHUD />
-          {!isAnalysisModeActive && <CustomizationPanel />}
+          {!presentationMode && <Minimap />}
+          {!presentationMode && <FirstPersonHUD />}
+          {!isAnalysisModeActive && !presentationMode && <CustomizationPanel />}
         </main>
       )}
       <SmartReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />

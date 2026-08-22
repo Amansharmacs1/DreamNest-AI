@@ -51,7 +51,7 @@ Nivasa AI Smart Environmental Analysis
 ----------------------------------------
 Overall Design Score: ${analysisResult?.overallScore}/100
 
-Gemini Architect Summary:
+NIVA ROBO Summary:
 ${analysisResult?.explanation || 'No summary available.'}
 
 Recommendations:

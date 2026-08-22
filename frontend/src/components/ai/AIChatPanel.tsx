@@ -18,7 +18,9 @@ export default function AIChatPanel() {
   const { layout } = useLayoutStore();
   const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    { id: '1', role: 'assistant', content: "Hi! I'm NIVA ROBO, your personal AI Architectural Assistant. How can I help you refine your DreamNest today?" }
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,10 +136,7 @@ export default function AIChatPanel() {
             <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-4 flex items-center justify-between text-white">
               <div className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-blue-400" />
-                <h3 className="font-semibold text-lg">AI Architect</h3>
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full ml-2 uppercase tracking-wide">
-                  {provider}
-                </span>
+                <h3 className="font-semibold text-lg">NIVA ROBO</h3>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setIsExpanded(!isExpanded)} className="hover:bg-white/10 p-1 rounded">
@@ -154,7 +153,7 @@ export default function AIChatPanel() {
               {messages.length === 0 ? (
                 <div className="text-center text-slate-500 mt-10 space-y-6">
                   <Bot className="w-12 h-12 mx-auto text-slate-300" />
-                  <p>Hi! I'm your AI Architect. How can I help you design your dream home?</p>
+                  <p>Hi! I'm NIVA ROBO. How can I help you design your dream home?</p>
                   
                   {/* Suggestions */}
                   <div className="flex flex-wrap justify-center gap-2 px-4">

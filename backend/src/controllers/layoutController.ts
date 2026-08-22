@@ -52,7 +52,7 @@ export const generateLayout = async (req: Request, res: Response): Promise<void>
         layout = candidates[0];
         console.log(`AI Layout generation successful. Selected variant: ${layout.metadata?.variantName} with score ${layout.metadata?.score?.overall}`);
       } else {
-        throw new Error('Gemini failed to generate any valid candidates.');
+        throw new Error('AI Engine failed to generate any valid candidates.');
       }
     } catch (aiError) {
       console.warn('AI Layout generation failed completely, falling back to deterministic layout.', aiError);

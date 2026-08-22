@@ -1,10 +1,13 @@
-import { Materials } from '../materials/MaterialSystem';
+import { getMaterial } from '../materials/MaterialFactory';
+import { useThreeStore } from '@/store/threeStore';
 import { useWizardStore } from '@/store/wizardStore';
 import * as THREE from 'three';
 import { useRef, useEffect } from 'react';
 
 export default function PlotGenerator({ width, length }: { width: number, length: number }) {
   const facingDirection = useWizardStore((state) => state.preferences.plot.facingDirection);
+  const theme = useThreeStore((state) => state.theme);
+  const wireframe = useThreeStore((state) => state.wireframe);
   
   // Center of the plot in the backend coordinates is (width/2, length/2)
   const cx = width / 2;
@@ -12,6 +15,9 @@ export default function PlotGenerator({ width, length }: { width: number, length
   const wallHeight = 5;
   const wallThickness = 0.5;
   
+  const grassMat = getMaterial('grass', false, wireframe, theme);
+  const roadMat = getMaterial('road', false, wireframe, theme);
+  const wallMat = getMaterial('boundary', false, wireframe, theme);
   
   // Tree Instanced Mesh Ref
   const treeCount = 15;
@@ -52,33 +58,33 @@ export default function PlotGenerator({ width, length }: { width: number, length
   return (
     <group position={[cx, -0.1, cz]}>
       {/* Base Grass */}
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} material={Materials.Grass}>
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} material={grassMat}>
         <planeGeometry args={[width, length]} />
       </mesh>
       
       {/* Expanded Contextual Terrain */}
-      <mesh receiveShadow position={[0, -0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} material={Materials.Grass}>
+      <mesh receiveShadow position={[0, -0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} material={grassMat}>
         <planeGeometry args={[300, 300]} />
       </mesh>
       
       {/* Road (Context) */}
       {facingDirection === 'North' && (
-        <mesh receiveShadow position={[0, 0.01, -length/2 - 15]} rotation={[-Math.PI / 2, 0, 0]} material={Materials.Asphalt}>
+        <mesh receiveShadow position={[0, 0.01, -length/2 - 15]} rotation={[-Math.PI / 2, 0, 0]} material={roadMat}>
           <planeGeometry args={[300, 20]} />
         </mesh>
       )}
       {facingDirection === 'South' && (
-        <mesh receiveShadow position={[0, 0.01, length/2 + 15]} rotation={[-Math.PI / 2, 0, 0]} material={Materials.Asphalt}>
+        <mesh receiveShadow position={[0, 0.01, length/2 + 15]} rotation={[-Math.PI / 2, 0, 0]} material={roadMat}>
           <planeGeometry args={[300, 20]} />
         </mesh>
       )}
       {facingDirection === 'East' && (
-        <mesh receiveShadow position={[width/2 + 15, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} material={Materials.Asphalt}>
+        <mesh receiveShadow position={[width/2 + 15, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} material={roadMat}>
           <planeGeometry args={[20, 300]} />
         </mesh>
       )}
       {facingDirection === 'West' && (
-        <mesh receiveShadow position={[-width/2 - 15, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} material={Materials.Asphalt}>
+        <mesh receiveShadow position={[-width/2 - 15, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} material={roadMat}>
           <planeGeometry args={[20, 300]} />
         </mesh>
       )}
@@ -87,40 +93,36 @@ export default function PlotGenerator({ width, length }: { width: number, length
       <group position={[0, wallHeight / 2, 0]}>
         {/* North Wall (Top in 2D, -Z in 3D) */}
         {facingDirection !== 'North' && (
-          <mesh castShadow receiveShadow position={[0, 0, -length / 2]} material={Materials.ExteriorWallPlaster}>
+          <mesh castShadow receiveShadow position={[0, 0, -length / 2]} material={wallMat}>
             <boxGeometry args={[width + wallThickness, wallHeight, wallThickness]} />
           </mesh>
         )}
         
         {/* South Wall (Bottom in 2D, +Z in 3D) */}
         {facingDirection !== 'South' && (
-          <mesh castShadow receiveShadow position={[0, 0, length / 2]} material={Materials.ExteriorWallPlaster}>
+          <mesh castShadow receiveShadow position={[0, 0, length / 2]} material={wallMat}>
             <boxGeometry args={[width + wallThickness, wallHeight, wallThickness]} />
           </mesh>
         )}
-
-        {/* East Wall (Right in 2D, +X in 3D) */}
-        {facingDirection !== 'East' && (
-          <mesh castShadow receiveShadow position={[width / 2, 0, 0]} material={Materials.ExteriorWallPlaster}>
+        
+        {/* West Wall (Left in 2D, -X in 3D) */}
+        {facingDirection !== 'West' && (
+          <mesh castShadow receiveShadow position={[-width / 2, 0, 0]} material={wallMat}>
             <boxGeometry args={[wallThickness, wallHeight, length - wallThickness]} />
           </mesh>
         )}
-
-        {/* West Wall (Left in 2D, -X in 3D) */}
-        {facingDirection !== 'West' && (
-          <mesh castShadow receiveShadow position={[-width / 2, 0, 0]} material={Materials.ExteriorWallPlaster}>
+        
+        {/* East Wall (Right in 2D, +X in 3D) */}
+        {facingDirection !== 'East' && (
+          <mesh castShadow receiveShadow position={[width / 2, 0, 0]} material={wallMat}>
             <boxGeometry args={[wallThickness, wallHeight, length - wallThickness]} />
           </mesh>
         )}
       </group>
       
-      {/* Trees using InstancedMesh */}
-      <instancedMesh ref={treeTrunkRef} args={[undefined, undefined, treeCount]} castShadow receiveShadow material={Materials.WoodDark}>
-        <cylinderGeometry args={[0.5, 0.7, 4, 8]} />
-      </instancedMesh>
-      <instancedMesh ref={treeLeavesRef} args={[undefined, undefined, treeCount]} castShadow receiveShadow material={Materials.Grass}>
-        <sphereGeometry args={[2, 8, 8]} />
-      </instancedMesh>
+      {/* Trees outside boundary */}
+      <instancedMesh ref={treeTrunkRef} args={[new THREE.CylinderGeometry(0.5, 0.6, 1, 8), getMaterial('wood', false, wireframe, theme), treeCount]} castShadow receiveShadow />
+      <instancedMesh ref={treeLeavesRef} args={[new THREE.DodecahedronGeometry(1, 1), getMaterial('grass', false, wireframe, theme), treeCount]} castShadow receiveShadow />
     </group>
   );
 }
